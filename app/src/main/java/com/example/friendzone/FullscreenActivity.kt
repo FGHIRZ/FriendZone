@@ -28,33 +28,6 @@ import com.mapbox.mapboxsdk.maps.Style
  * status bar and navigation/system bar) with user interaction.
  */
 class FullscreenActivity : AppCompatActivity(), PermissionsListener {
-    private lateinit var fullscreenContent: TextView
-    private lateinit var fullscreenContentControls: LinearLayout
-
-    @SuppressLint("InlinedApi")
-    private val hidePart2Runnable = Runnable {
-        // Delayed removal of status and navigation bar
-
-        // Note that some of these constants are new as of API 16 (Jelly Bean)
-        // and API 19 (KitKat). It is safe to use them, as they are inlined
-        // at compile-time and do nothing on earlier devices.
-        fullscreenContent.systemUiVisibility =
-            View.SYSTEM_UI_FLAG_LOW_PROFILE or
-                    View.SYSTEM_UI_FLAG_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-    }
-    private val showPart2Runnable = Runnable {
-        // Delayed display of UI elements
-        supportActionBar?.show()
-        fullscreenContentControls.visibility = View.VISIBLE
-    }
-    private var isFullscreen: Boolean = false
-
-
-
 
     private var mapView: MapView? = null
     private var permissionsManager: PermissionsManager = PermissionsManager(this)
@@ -68,7 +41,6 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token))
         setContentView(R.layout.activity_fullscreen)
 
-
         mapView = findViewById(R.id.mapView)
         mapView?.onCreate(savedInstanceState)
         mapView?.getMapAsync { mapboxMap ->
@@ -76,8 +48,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
             mapboxMap.setStyle(Style.Builder().fromUri(resources.getString(R.string.mapbox_style_url))) {
                 this.mapboxMap = mapboxMap
                 enableLocationComponent(it)
-                mapboxMap.setMinZoomPreference(5.00)
-
+                mapboxMap.setMinZoomPreference(13.00)
             }
 
         }
@@ -123,14 +94,6 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        val position = CameraPosition.Builder()
-            .target(LatLng(51.50550, -0.07520))
-            .zoom(10.0)
-            .tilt(20.0)
-            .build()
-
-        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 1000);
-
     }
 
 

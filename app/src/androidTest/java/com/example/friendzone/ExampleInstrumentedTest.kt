@@ -14,6 +14,8 @@ import org.junit.Assert.*
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 // Its alive !!
+
+//rendez-vous c'est la police !
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
     @Test

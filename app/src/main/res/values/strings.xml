@@ -2,4 +2,8 @@
     <string name="app_name">FriendZone</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="mapbox_access_token">sk.eyJ1IjoiZmdoaXJ6IiwiYSI6ImNrdDhrcnc2YzEzOTEyb3BlZm0zOWZpd2gifQ.4X8ddPGOOPJZuTSMryfuTw</string>
+    <string name="mapbox_style_url">mapbox://styles/fghirz/ckrthawpk2ccv17o2vijetyq3</string>
+    <string name="user_location_permission_explanation">yoyo</string>
+    <string name="user_location_permission_not_granted">oh no</string>
 </resources>

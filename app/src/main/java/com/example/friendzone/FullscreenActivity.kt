@@ -1,18 +1,14 @@
 package com.example.friendzone
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.View
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
-import com.mapbox.mapboxsdk.camera.CameraPosition
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.LocationComponentOptions
@@ -21,6 +17,10 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.plugins.annotation.Symbol
+import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
+import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
+import android.util.Log
 
 
 /**
@@ -32,11 +32,14 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
     private var mapView: MapView? = null
     private var permissionsManager: PermissionsManager = PermissionsManager(this)
     private lateinit var mapboxMap: MapboxMap
+    private lateinit var symbol: Symbol
 
+    private val ID_ICON_AIRPORT = "airport"
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
 
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token))
         setContentView(R.layout.activity_fullscreen)
@@ -49,14 +52,30 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
                 this.mapboxMap = mapboxMap
                 enableLocationComponent(it)
                 mapboxMap.setMinZoomPreference(13.00)
-            }
+                // Create a SymbolManager.
+                val mv : MapView = mapView as MapView
+                val symbolManager = SymbolManager(mv, mapboxMap, it)
 
+// Set non-data-driven properties.
+                symbolManager.iconAllowOverlap = true
+                symbolManager.iconIgnorePlacement = true
+
+// Create a symbol at the specified location.
+
+                this.symbol = symbolManager.create(
+                    SymbolOptions()
+                    .withLatLng(LatLng(48.69161598203885, 6.1866288427972345))
+                    .withIconImage(ID_ICON_AIRPORT)
+                    .withIconSize(1.3f))
+
+            }
         }
     }
 
 
     @SuppressLint("MissingPermission")
     private fun enableLocationComponent(loadedMapStyle: Style) {
+
 // Check if permissions are enabled and if not request
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
 
@@ -84,6 +103,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
 
 // Set the LocationComponent's render mode
                 renderMode = RenderMode.COMPASS
+
             }
         } else {
             permissionsManager = PermissionsManager(this)

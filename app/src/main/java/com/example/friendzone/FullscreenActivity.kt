@@ -1,8 +1,10 @@
 package com.example.friendzone
 
-import android.animation.ObjectAnimator
+import android.R.attr.bitmap
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -20,7 +22,6 @@ import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
-import android.util.Log
 
 
 /**
@@ -32,9 +33,9 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
     private var mapView: MapView? = null
     private var permissionsManager: PermissionsManager = PermissionsManager(this)
     private lateinit var mapboxMap: MapboxMap
-    private lateinit var symbol: Symbol
+    private lateinit var symbolManager : SymbolManager
 
-    private val ID_ICON_AIRPORT = "airport"
+    private var userlist : List<User> = listOf()
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,24 +55,32 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
                 mapboxMap.setMinZoomPreference(13.00)
                 // Create a SymbolManager.
                 val mv : MapView = mapView as MapView
-                val symbolManager = SymbolManager(mv, mapboxMap, it)
+                symbolManager = SymbolManager(mv, mapboxMap, it)
 
 // Set non-data-driven properties.
                 symbolManager.iconAllowOverlap = true
                 symbolManager.iconIgnorePlacement = true
 
-// Create a symbol at the specified location.
+                mapboxMap.getStyle { style -> style.addImage("skin1", resources.getDrawable(R.drawable.skin1))
+                    style.addImage("skin2", resources.getDrawable(R.drawable.skin2))
+                    style.addImage("skin3", resources.getDrawable(R.drawable.skin3))}
 
-                this.symbol = symbolManager.create(
-                    SymbolOptions()
-                    .withLatLng(LatLng(48.69161598203885, 6.1866288427972345))
-                    .withIconImage(ID_ICON_AIRPORT)
-                    .withIconSize(1.3f))
+
+                start_refresh_screen()
+
 
             }
         }
     }
 
+
+    private fun start_refresh_screen(){
+
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            start_refresh_screen()
+        }, 100)
+    }
 
     @SuppressLint("MissingPermission")
     private fun enableLocationComponent(loadedMapStyle: Style) {

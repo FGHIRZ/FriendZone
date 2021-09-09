@@ -1,13 +1,15 @@
 package com.example.friendzone
 
-import android.R.attr.bitmap
 import android.annotation.SuppressLint
+import android.graphics.PointF
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.gson.JsonElement
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
@@ -19,6 +21,7 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.plugins.annotation.OnSymbolClickListener
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
@@ -35,7 +38,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
     private lateinit var mapboxMap: MapboxMap
     private lateinit var symbolManager : SymbolManager
 
-    private var userlist : List<User> = listOf()
+    private var users = mutableListOf<User>()
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,10 +68,8 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
                     style.addImage("skin2", resources.getDrawable(R.drawable.skin2))
                     style.addImage("skin3", resources.getDrawable(R.drawable.skin3))}
 
-
+                init_users()
                 start_refresh_screen()
-
-
             }
         }
     }
@@ -76,10 +77,51 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
 
     private fun start_refresh_screen(){
 
-
+        update_user_data()
         Handler(Looper.getMainLooper()).postDelayed({
             start_refresh_screen()
-        }, 100)
+        }, 1000)
+    }
+
+    private fun init_users()
+    {
+        var symbol = symbolManager.create(SymbolOptions()
+            .withLatLng(LatLng(48.6938406181887, 6.183570629782477))
+            .withIconImage("skin1")
+            .withIconSize(1.3f)
+            .withTextOpacity(0.0f)
+            .withTextField("Jerome"))
+
+        var user1 : User = User("abc", "Jerome", symbol)
+
+        symbol = symbolManager.create(SymbolOptions()
+            .withLatLng(LatLng(48.693262228886, 6.1831571692140965))
+            .withIconImage("skin2")
+            .withIconSize(1.3f)
+            .withTextOpacity(0.0f)
+            .withTextField("Jean"))
+
+        var user2 : User = User("adc", "Jean", symbol)
+        users.add(user1)
+        users.add(user2)
+
+        symbolManager.addClickListener(OnSymbolClickListener {
+            clickedsymbol ->
+            clickedsymbol.textOpacity=1.0f
+            var point : PointF = PointF(0.0f,-1.5f)
+            clickedsymbol.textOffset = point
+            symbolManager.update(clickedsymbol)
+            true
+        })
+    }
+
+    private fun update_user_data()
+    {
+        for(user in users)
+        {
+            user.symbol.latLng= LatLng(user.symbol.latLng.latitude+0.0001, user.symbol.latLng.longitude)
+            symbolManager.update(user.symbol)
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -91,7 +133,12 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
 // Create and customize the LocationComponent's options
             val customLocationComponentOptions = LocationComponentOptions.builder(this)
                 .trackingGesturesManagement(true)
-                .accuracyColor(ContextCompat.getColor(this, R.color.mapboxGreen))
+                .accuracyColor(ContextCompat.getColor(this, R.color.light_blue_600))
+
+                .minZoomIconScale(2.0f)
+                .bearingTintColor(R.color.black)
+                .backgroundDrawable(R.drawable.skin1)
+                .foregroundDrawable(R.drawable.skin1)
                 .build()
 
             val locationComponentActivationOptions = LocationComponentActivationOptions.builder(this, loadedMapStyle)

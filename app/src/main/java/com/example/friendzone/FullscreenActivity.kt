@@ -1,11 +1,15 @@
 package com.example.friendzone
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.PointF
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.LayoutInflater
+import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -70,6 +74,24 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
 
                 init_users()
                 start_refresh_screen()
+                val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
+                // Inflate a custom view using layout inflater
+                val view = inflater.inflate(R.layout.pop_event,null)
+
+                // Initialize a new instance of popup window
+                val popupWindow = PopupWindow(
+                    view, // Custom view to show in popup window
+                    LinearLayout.LayoutParams.WRAP_CONTENT, // Width of popup window
+                    LinearLayout.LayoutParams.WRAP_CONTENT // Window height
+                )
+
+                popupWindow.showAtLocation(mapView
+                ,
+                1,
+                0,0)
+
+
             }
         }
     }

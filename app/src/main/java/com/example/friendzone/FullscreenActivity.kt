@@ -10,9 +10,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.google.gson.JsonElement
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -74,26 +79,54 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
 
                 init_users()
                 start_refresh_screen()
-                val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                Toast.makeText( this, "yoyo", Toast.LENGTH_LONG).show()
+                ShowEventWindow()
+                SendHttpRequest()
 
-                // Inflate a custom view using layout inflater
-                val view = inflater.inflate(R.layout.pop_event,null)
-
-                // Initialize a new instance of popup window
-                val popupWindow = PopupWindow(
-                    view, // Custom view to show in popup window
-                    LinearLayout.LayoutParams.WRAP_CONTENT, // Width of popup window
-                    LinearLayout.LayoutParams.WRAP_CONTENT // Window height
-                )
-
-                popupWindow.showAtLocation(mapView
-                ,
-                1,
-                0,0)
 
 
             }
         }
+    }
+
+    private fun ShowEventWindow()
+    {
+        val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
+        // Inflate a custom view using layout inflater
+        val view = inflater.inflate(R.layout.pop_event,null)
+
+        // Initialize a new instance of popup window
+        val popupWindow = PopupWindow(
+            view, // Custom view to show in popup window
+            LinearLayout.LayoutParams.WRAP_CONTENT, // Width of popup window
+            LinearLayout.LayoutParams.WRAP_CONTENT // Window height
+        )
+
+        popupWindow.showAtLocation(mapView
+            ,
+            1,
+            0,0)
+    }
+
+    private fun SendHttpRequest(){
+
+        // Instantiate the RequestQueue.
+        val queue = Volley.newRequestQueue(this)
+        val url = "https://www.google.com"
+        val textView = findViewById<TextView>(R.id.text_view)
+
+// Request a string response from the provided URL.
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            Response.Listener<String> { response ->
+                // Display the first 500 characters of the response string.
+                Toast.makeText( this, "Response is: ${response.substring(0, 500)}", Toast.LENGTH_LONG).show()
+            },
+            Response.ErrorListener { Toast.makeText( this, "no response", Toast.LENGTH_LONG).show() })
+
+// Add the request to the RequestQueue.
+        queue.add(stringRequest)
     }
 
 

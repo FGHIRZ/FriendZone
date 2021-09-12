@@ -2,14 +2,12 @@ package com.example.friendzone
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.PopupWindow
@@ -101,7 +99,6 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         // Request a string response from the provided URL.
 
         val json= JSONObject()
-        val locationJSON = JSONObject()
         val userJSON = JSONObject()
         userJSON.put("id", myId)
         json.put("request", "login")
@@ -197,7 +194,6 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
 
     private fun refreshScreen()
     {
-
         for(user in users)
         {
             symbolManager.update(user.symbol)

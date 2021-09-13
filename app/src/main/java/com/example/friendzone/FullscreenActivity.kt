@@ -7,6 +7,7 @@ import android.location.Location
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.LinearLayout
@@ -14,6 +15,7 @@ import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
@@ -31,6 +33,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
+import org.json.JSONArray
 import org.json.JSONObject
 
 
@@ -38,6 +41,7 @@ import org.json.JSONObject
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
+
 class FullscreenActivity : AppCompatActivity(), PermissionsListener {
 
     private var mapView: MapView? = null
@@ -91,7 +95,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         requestUserList(mapboxMap.locationComponent.lastKnownLocation!!)
         Handler(Looper.getMainLooper()).postDelayed({
             startScreenRefresh()
-        }, 1000)
+        }, 10000)
     }
 
     private fun requestLogIn(){
@@ -108,15 +112,20 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
             Request.Method.POST, url, json,
             { response ->
                 Toast.makeText( this, response.get("status") as String, Toast.LENGTH_LONG).show()
-                startScreenRefresh()
+
             },
             { Toast.makeText( this, "no response", Toast.LENGTH_LONG).show() })
-
+        jsonObjectRequest.setRetryPolicy(
+            DefaultRetryPolicy(
+                4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+        )
         queue.add(jsonObjectRequest)
+        startScreenRefresh()
     }
 
     private fun requestUserList(location : Location){
-
 
         // Request a string response from the provided URL.
 
@@ -133,32 +142,25 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.POST, url, json,
             { response ->
-                // Display the first 500 characters of the response string.
-                Toast.makeText( this, "received", Toast.LENGTH_LONG).show()
-                val params = response.get("params") as JSONObject
-                val userList = params.get("users") as JSONObject
-                //updateUsers(userList)
-                //refreshScreen()
+                val userList = response.get("params") as JSONArray
+                updateUsers(userList)
+                refreshScreen()
             },
-            { Toast.makeText( this, "no response", Toast.LENGTH_LONG).show() })
-
+            { Log.d("yolo", "no response")})
         queue.add(jsonObjectRequest)
     }
 
-    private fun updateUsers(userList : JSONObject)
+    private fun updateUsers(userList : JSONArray)
     {
-        val keys: Iterator<String> = userList.keys()
-        while (keys.hasNext())
+        for(i in 0 until userList.length())
         {
-            val key = keys.next()
-
             //Check if user is already in list & update its position
             var userFound = false
             for (user in users)
             {
-                if(user.id==(userList.get(key) as JSONObject).get("id"))
+                if(user.id==(userList[i] as JSONObject).get("user_id"))
                 {
-                    user.symbol.latLng = LatLng((userList.get(key) as JSONObject).get("lat") as Double, (userList.get(key) as JSONObject).get("lon") as Double)
+                    user.symbol.latLng = LatLng((userList[i] as JSONObject).get("lat") as Double, (userList[i] as JSONObject).get("lon") as Double)
                     userFound = true
                     user.match = true
                 }
@@ -168,26 +170,12 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
             if(!userFound)
             {
                 val symbol = symbolManager.create(SymbolOptions()
-                    .withLatLng(LatLng((userList.get(key) as JSONObject).get("lat") as Double, (userList.get(key) as JSONObject).get("lon") as Double))
-                    .withIconImage((userList.get(key) as JSONObject).get("skin") as String)
+                    .withLatLng(LatLng((userList[i] as JSONObject).get("lat") as Double, (userList[i] as JSONObject).get("lon") as Double))
+                    .withIconImage((userList[i] as JSONObject).get("skin") as String)
                     .withIconSize(1.3f)
                     .withTextOpacity(0.0f))
-                val user = User((userList.get(key) as JSONObject).get("id") as String, symbol)
+                val user = User((userList[i] as JSONObject).get("user_id") as Int, symbol)
                 users.add(user)
-            }
-
-            //remove users no more in list
-            for (user in users)
-            {
-                if(!user.match)
-                {
-                    symbolManager.delete(user.symbol)
-                    users.remove(user)
-                }
-                else
-                {
-                    user.match=false
-                }
             }
         }
     }
@@ -196,6 +184,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
     {
         for(user in users)
         {
+            Log.d("yolo", user.id.toString())
             symbolManager.update(user.symbol)
         }
     }

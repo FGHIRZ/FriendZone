@@ -150,6 +150,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         queue.add(jsonObjectRequest)
     }
 
+    //bb
     private fun updateUsers(userList : JSONArray)
     {
         for(i in 0 until userList.length())

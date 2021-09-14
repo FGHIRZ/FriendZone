@@ -9,10 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.PopupWindow
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.android.volley.DefaultRetryPolicy
@@ -48,7 +45,8 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
     private var permissionsManager: PermissionsManager = PermissionsManager(this)
     private lateinit var mapboxMap: MapboxMap
     private lateinit var symbolManager : SymbolManager
-    private var myId : Int = 108
+    private var myID : Int = 0
+    private var myUsername : String = ""
     private lateinit var mySkin : String
     private lateinit var queue : RequestQueue
     private val url = "http://82.165.223.209:8080/"
@@ -58,13 +56,26 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.login_page)
+
+        var u_name : EditText = findViewById(R.id.user_id)
+        var button : Button = findViewById(R.id.login_button)
+
+        button.setOnClickListener {
+            myUsername = u_name.text.toString()
+            login(savedInstanceState)}
+
+        queue = Volley.newRequestQueue(this)
+        //startMapActivity(savedInstanceState)
 
 
+    }
+
+    private fun startMapActivity(savedInstanceState: Bundle?){
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token))
         setContentView(R.layout.activity_fullscreen)
         mySkin = "skin1"
 
-        queue = Volley.newRequestQueue(this)
         mapView = findViewById(R.id.mapView)
         mapView?.onCreate(savedInstanceState)
         mapView?.getMapAsync { mapboxMap ->
@@ -72,8 +83,8 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
             mapboxMap.setStyle(Style.Builder().fromUri(resources.getString(R.string.mapbox_style_url))) {
                 this.mapboxMap = mapboxMap
                 enableLocationComponent(it)
-                mapboxMap.setMinZoomPreference(13.00)
-                
+                mapboxMap.setMinZoomPreference(2.00)
+
                 // Create a SymbolManager.
                 val mv : MapView = mapView as MapView
                 symbolManager = SymbolManager(mv, mapboxMap, it)
@@ -84,12 +95,12 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
                     style.addImage("skin2", BitmapFactory.decodeResource(resources,R.drawable.skin2))
                     style.addImage("skin3", BitmapFactory.decodeResource(resources,R.drawable.skin3))}
 
-                requestLogIn()
+                startScreenRefresh()
 
             }
         }
-    }
 
+    }
     private fun startScreenRefresh(){
 
         requestUserList(mapboxMap.locationComponent.lastKnownLocation!!)
@@ -98,21 +109,23 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         }, 10000)
     }
 
-    private fun requestLogIn(){
+    private fun login(savedInstanceState: Bundle?){
 
         // Request a string response from the provided URL.
 
         val json= JSONObject()
         val userJSON = JSONObject()
-        userJSON.put("id", myId)
+        userJSON.put("name", myUsername)
         json.put("request", "login")
         json.put("params",userJSON)
 
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.POST, url, json,
             { response ->
-                Toast.makeText( this, response.get("status") as String, Toast.LENGTH_LONG).show()
 
+                Toast.makeText( this, "login" as String, Toast.LENGTH_LONG).show()
+                Log.d("yolo", response.toString())
+                handleLogin(response, savedInstanceState)
             },
             { Toast.makeText( this, "no response", Toast.LENGTH_LONG).show() })
         jsonObjectRequest.setRetryPolicy(
@@ -122,7 +135,17 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
         )
         queue.add(jsonObjectRequest)
-        startScreenRefresh()
+    }
+
+    private fun handleLogin(response : JSONObject, savedInstanceState: Bundle?)
+    {
+        if(response.get("status")=="ok")
+        {
+            Log.d("yolo", response.toString())
+            myID=(response.get("params") as JSONObject).getInt("user_id")
+            mySkin=(response.get("params") as JSONObject).getString("skin")
+            startMapActivity(savedInstanceState)
+        }
     }
 
     private fun requestUserList(location : Location){
@@ -134,7 +157,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         locationJSON.put("lat", location.latitude)
         locationJSON.put("lon", location.longitude)
         val userJSON = JSONObject()
-        userJSON.put("id", myId)
+        userJSON.put("id", myID)
         userJSON.put("location", locationJSON)
         json.put("request", "update")
         json.put("params",userJSON)
@@ -142,6 +165,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.POST, url, json,
             { response ->
+                Log.d("update_response", response.toString())
                 val userList = response.get("params") as JSONArray
                 updateUsers(userList)
                 refreshScreen()

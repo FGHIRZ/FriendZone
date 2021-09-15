@@ -61,15 +61,19 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
 
         var u_name : EditText = findViewById(R.id.user_id)
         var pass : EditText = findViewById(R.id.password)
-        var button : Button = findViewById(R.id.login_button)
+        var loginButton : Button = findViewById(R.id.login_button)
+        var createButton : Button = findViewById(R.id.create_button)
 
-        button.setOnClickListener {
+        loginButton.setOnClickListener {
+            myUsername = u_name.text.toString()
+            login(u_name.text.toString(), pass.text.toString(), savedInstanceState )}
+
+        createButton.setOnClickListener {
             myUsername = u_name.text.toString()
             createAccount(u_name.text.toString(), pass.text.toString() )}
 
         queue = Volley.newRequestQueue(this)
         //startMapActivity(savedInstanceState)
-
 
     }
 
@@ -130,7 +134,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         }, 10000)
     }
 
-    private fun login(savedInstanceState: Bundle?){
+    private fun login(username : String, password : String, savedInstanceState: Bundle?){
 
         // Request a string response from the provided URL.
 

@@ -48,6 +48,13 @@
                 android:layout_centerVertical="true"
                 android:id="@+id/login_button"
                 android:text="LOGIN"/>
+        <Button
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:id="@+id/create_button"
+                android:text="CREATE"/>
 
     </LinearLayout>
 </RelativeLayout>

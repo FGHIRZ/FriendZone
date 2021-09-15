@@ -6,20 +6,41 @@
                 android:paddingRight="16dp"
                 android:paddingTop="16dp">
 
+    <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/fblogo"
+            android:layout_above="@+id/login_layout"
+            android:paddingBottom="30dp"
+    android:layout_centerHorizontal="true">
+
+    </ImageView>
+
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+    android:id="@+id/login_layout">
         <EditText
-                android:layout_width="96dp"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
-                android:text="username"
+                android:textAlignment="center"
+                android:hint="username"
                 android:id="@+id/user_id"/>
+        <EditText
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:hint="password"
+                android:textAlignment="center"
+                android:inputType="textPassword"
+                android:id="@+id/password"/>
         <Button
                 android:layout_width="96dp"
                 android:layout_height="wrap_content"

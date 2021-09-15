@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -59,11 +60,12 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         setContentView(R.layout.login_page)
 
         var u_name : EditText = findViewById(R.id.user_id)
+        var pass : EditText = findViewById(R.id.password)
         var button : Button = findViewById(R.id.login_button)
 
         button.setOnClickListener {
             myUsername = u_name.text.toString()
-            login(savedInstanceState)}
+            createAccount(u_name.text.toString(), pass.text.toString() )}
 
         queue = Volley.newRequestQueue(this)
         //startMapActivity(savedInstanceState)
@@ -95,12 +97,31 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
                     style.addImage("skin2", BitmapFactory.decodeResource(resources,R.drawable.skin2))
                     style.addImage("skin3", BitmapFactory.decodeResource(resources,R.drawable.skin3))}
 
+                val settings_button : Button = findViewById(R.id.settings_button)
+                settings_button.setOnClickListener {
+
+                    showSettingspage()
+                }
                 startScreenRefresh()
 
             }
         }
 
     }
+
+    private fun showSettingspage()
+    {
+
+        val settingspage : LinearLayout = findViewById(R.id.llayout)
+        (mapView as MapView).isVisible=false
+        settingspage.isVisible=true
+        var back_button : Button = findViewById(R.id.back_button)
+        back_button.setOnClickListener {
+            (mapView as MapView).isVisible=true
+            settingspage.isVisible=false
+        }
+    }
+
     private fun startScreenRefresh(){
 
         requestUserList(mapboxMap.locationComponent.lastKnownLocation!!)
@@ -122,7 +143,6 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.POST, url, json,
             { response ->
-
                 Toast.makeText( this, "login" as String, Toast.LENGTH_LONG).show()
                 Log.d("yolo", response.toString())
                 handleLogin(response, savedInstanceState)
@@ -135,6 +155,29 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
         )
         queue.add(jsonObjectRequest)
+    }
+
+    private fun createAccount(username : String, password : String)
+    {
+
+        val json = JSONObject()
+        val userJSON= JSONObject()
+        userJSON.put("name", username)
+        userJSON.put("password", password)
+        json.put("request", "create_account")
+        json.put("params", userJSON)
+
+        val createAccountRequest= JsonObjectRequest(Request.Method.POST, url, json, {response->
+            Toast.makeText( this, response.get("status") as String, Toast.LENGTH_LONG).show()
+        }, {})
+        createAccountRequest.setRetryPolicy(
+            DefaultRetryPolicy(
+                4000,
+                1,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+
+        queue.add(createAccountRequest)
+
     }
 
     private fun handleLogin(response : JSONObject, savedInstanceState: Bundle?)
@@ -177,6 +220,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
     //bb
     private fun updateUsers(userList : JSONArray)
     {
+
         for(i in 0 until userList.length())
         {
             //Check if user is already in list & update its position
@@ -200,7 +244,22 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
                     .withIconSize(1.3f)
                     .withTextOpacity(0.0f))
                 val user = User((userList[i] as JSONObject).get("user_id") as Int, symbol)
+                user.match= true
                 users.add(user)
+            }
+
+            for(user in users)
+            {
+                if(!user.match)
+                {
+                    symbolManager.delete(user.symbol)
+                    Log.d("user deleted", "a")
+                    users.remove(user)
+                }
+                else
+                {
+                    user.match=false
+                }
             }
         }
     }
@@ -209,7 +268,6 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
     {
         for(user in users)
         {
-            Log.d("yolo", user.id.toString())
             symbolManager.update(user.symbol)
         }
     }

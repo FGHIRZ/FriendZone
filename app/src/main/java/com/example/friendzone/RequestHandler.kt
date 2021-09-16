@@ -37,8 +37,20 @@ class RequestHandler {
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.POST, server_url, json_request,
             { response ->
-                Toast.makeText(activity, response.get("status") as String, Toast.LENGTH_SHORT).show()
-                (activity as MainActivity).test()
+                if((response.get("status") as String) == "ok") {
+                    Toast.makeText(activity, response.get("status") as String, Toast.LENGTH_SHORT).show()
+                    val user_id = ((response.get("params") as JSONObject).get("user_id")) as Int
+                    val skin = ((response.get("params") as JSONObject).get("skin")) as String
+
+                    val user = User(user_id)
+                    user.username = username
+                    user.skin = skin
+                    (activity as Login).returnLogin(user)
+                }
+                else
+                {
+                    Toast.makeText(activity, ((response.get("params") as JSONObject).get("description") as String), Toast.LENGTH_SHORT).show()
+                }
             },
             { })
         jsonObjectRequest.setRetryPolicy(
@@ -88,7 +100,7 @@ class RequestHandler {
         locationJSON.put("lat", location.latitude)
         locationJSON.put("lon", location.longitude)
         val userJSON = JSONObject()
-        userJSON.put("id", user.id)
+        userJSON.put("user_id", user.id)
         userJSON.put("location", locationJSON)
         json.put("request", "update")
         json.put("params",userJSON)

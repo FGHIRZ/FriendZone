@@ -3,17 +3,13 @@ package com.example.friendzone
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.graphics.BitmapFactory
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.provider.AlarmClock.EXTRA_MESSAGE
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -32,35 +28,27 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     private lateinit var textview : TextView
     private val requestHandler = RequestHandler()
     var permissionsManager: PermissionsManager = PermissionsManager(this)
-    private val maphandler : MapHandler = MapHandler()
 
+    private lateinit var symbolManager : SymbolManager
+    var mapView: MapView? = null
+    lateinit var mapboxMap: MapboxMap
+    private lateinit var activity : Activity
+    private var savedInstance : Bundle? = null
+
+    private var mapUrl = "mapbox://styles/meetgameproject/ckt8pxo7y28vs19v1qlyjrk8v"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        val button : Button = findViewById(R.id.button)
-        val erwanButton : Button = findViewById(R.id.test_erwan)
+
         requestHandler.initialize(this)
-        textview = findViewById(R.id.textView)
-        maphandler.initMap(this, savedInstanceState)
 
-        erwanButton.setOnClickListener {
-            test()
-        }
+        Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
+        setContentView(R.layout.activity_map)
 
-        button.setOnClickListener {
-            requestHandler.requestLogin("FGHIRZ", "lasalade", this)
-            startMap()
-            /*val intent : Intent = Intent(this, Login::class.java).apply {
-                putExtra(EXTRA_MESSAGE, "yoyo")
-            }
-            getLogin.launch(intent)*/
-        }
-    }
+        mapView = findViewById(R.id.mapView);
+        mapView?.onCreate(savedInstanceState);
 
-    fun test()
-    {
-        textview.setText("Alain Ouakbar")
+        login()
     }
 
     private fun login() {
@@ -74,11 +62,26 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
             putExtra(EXTRA_MESSAGE, "yoyo")
             getLogin.launch(intent)
         }
+        startActivity(intent)
     }
 
+    private fun startMap()
+    {
+        mapView?.getMapAsync { mapboxMap ->
 
-    private fun startMap() {
-        setContentView(R.layout.activity_map)
+            mapboxMap.setStyle(Style.Builder().fromUri(resources.getString(R.string.mapbox_style_url))) {
+                this.mapboxMap = mapboxMap
+                enableLocationComponent(it)
+                mapboxMap.setMinZoomPreference(2.00)
+
+                // Create a SymbolManager.
+                val mv : MapView = mapView as MapView
+                symbolManager = SymbolManager(mv, mapboxMap, it)
+                symbolManager.iconAllowOverlap = true
+                symbolManager.iconIgnorePlacement = true
+
+            }
+        }
     }
 
     override fun onExplanationNeeded(permissionsToExplain: List<String>) {
@@ -87,47 +90,55 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
 
     override fun onPermissionResult(granted: Boolean) {
         if (granted) {
-            maphandler.enableLocationComponent(maphandler.mapboxMap.style!!)
         } else {
             Toast.makeText(this, R.string.user_location_permission_not_granted, Toast.LENGTH_LONG).show()
             finish()
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        maphandler.mapView?.onStart()
-    }
 
-    override fun onResume() {
-        super.onResume()
-        maphandler.mapView?.onResume()
-    }
+    @SuppressLint("MissingPermission")
+    private fun enableLocationComponent(loadedMapStyle: Style) {
 
-    override fun onPause() {
-        super.onPause()
-        maphandler.mapView?.onPause()
-    }
+// Check if permissions are enabled and if not request
+        if (PermissionsManager.areLocationPermissionsGranted(this)) {
 
-    override fun onStop() {
-        super.onStop()
-        maphandler.mapView?.onStop()
-    }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        maphandler.mapView?.onSaveInstanceState(outState)
-    }
+// Create and customize the LocationComponent's options
+            val customLocationComponentOptions = LocationComponentOptions.builder(this)
+                .trackingGesturesManagement(true)
+                .accuracyColor(ContextCompat.getColor(this, R.color.light_blue_600))
 
-    override fun onLowMemory() {
-        super.onLowMemory()
-        maphandler.mapView?.onLowMemory()
-    }
+                .minZoomIconScale(2.0f)
+                .bearingTintColor(R.color.black)
+                .backgroundDrawable(R.drawable.skin1)
+                .foregroundDrawable(R.drawable.skin1)
+                .build()
 
-    override fun onDestroy() {
-        super.onDestroy()
-        maphandler.mapView?.onDestroy()
+            val locationComponentActivationOptions = LocationComponentActivationOptions.builder(this, loadedMapStyle)
+                .locationComponentOptions(customLocationComponentOptions)
+                .build()
 
+// Get an instance of the LocationComponent and then adjust its settings
+            mapboxMap.locationComponent.apply {
+
+// Activate the LocationComponent with options
+                activateLocationComponent(locationComponentActivationOptions)
+
+// Enable to make the LocationComponent visible
+                isLocationComponentEnabled = true
+
+// Set the LocationComponent's camera mode
+                cameraMode = CameraMode.TRACKING
+
+// Set the LocationComponent's render mode
+                renderMode = RenderMode.COMPASS
+
+            }
+        } else {
+            permissionsManager = PermissionsManager(this)
+            permissionsManager.requestLocationPermissions(this)
+        }
     }
 
     /*
@@ -173,4 +184,34 @@ private fun showEventWindow()
         0,0)
 }
 */
+    override fun onResume() {
+        super.onResume()
+        mapView!!.onResume()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        mapView!!.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        mapView!!.onStop()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mapView!!.onPause()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        mapView!!.onLowMemory()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mapView!!.onDestroy()
+    }
+
 }

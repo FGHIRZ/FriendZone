@@ -1,49 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:theme="@style/ThemeOverlay.FriendZone.FullscreenContainer"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:background="?attr/fullscreenBackgroundColor"
-             tools:context=".OldActivity">
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     <com.mapbox.mapboxsdk.maps.MapView
             android:id="@+id/mapView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-    />
-    <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|bottom">
-        <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/settings_button"
-        />
-        <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-        />
-        <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-        />
-    </LinearLayout>
-    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
-                  android:background="@color/testcolor"
-                  android:visibility="invisible"
-                  android:id="@+id/llayout"
-    >
-        <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/back_button"
-                android:text="retour"
-        >
-
-        </Button>
-
-    </LinearLayout>
+            mapbox:mapbox_cameraTargetLat="-32.557013"
+            mapbox:mapbox_cameraTargetLng="-56.149056"
+            mapbox:mapbox_cameraZoom="5.526846"/>
 
 </FrameLayout>

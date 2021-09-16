@@ -39,12 +39,17 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val button : Button = findViewById(R.id.button)
+        val erwanButton : Button = findViewById(R.id.test_erwan)
         requestHandler.initialize(this)
         textview = findViewById(R.id.textView)
+        maphandler.initMap(this, savedInstanceState)
+
+        erwanButton.setOnClickListener {
+            test()
+        }
 
         button.setOnClickListener {
             requestHandler.requestLogin("FGHIRZ", "lasalade", this)
-            maphandler.initMap(this, savedInstanceState)
             startMap()
             /*val intent : Intent = Intent(this, Login::class.java).apply {
                 putExtra(EXTRA_MESSAGE, "yoyo")

@@ -17,6 +17,7 @@ class Login : AppCompatActivity() {
         val username : EditText = findViewById(R.id.user_id)
         val loginButton : Button = findViewById(R.id.login_button)
         loginButton.setOnClickListener {
+
             data.setData(Uri.parse(username.text.toString()))
             setResult(RESULT_OK, data)
             Log.d("loginA", data.toString())

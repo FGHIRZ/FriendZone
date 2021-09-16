@@ -29,11 +29,6 @@
         </activity>
         <activity android:name=".Login">
         </activity>
-        <activity
-                android:name=".OldActivity"
-                android:configChanges="orientation|keyboardHidden|screenSize"
-                android:theme="@style/Theme.AppCompat.NoActionBar">
-        </activity>
     </application>
 
 </manifest>

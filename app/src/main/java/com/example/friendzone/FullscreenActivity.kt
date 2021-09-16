@@ -53,26 +53,15 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
     private val url = "http://82.165.223.209:8080/"
 
     private var users = mutableListOf<User>()
+    private var savedInstance: Bundle? = null
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.login_page)
-
-        var u_name : EditText = findViewById(R.id.user_id)
-        var pass : EditText = findViewById(R.id.password)
-        var loginButton : Button = findViewById(R.id.login_button)
-        var createButton : Button = findViewById(R.id.create_button)
-
-        loginButton.setOnClickListener {
-            myUsername = u_name.text.toString()
-            login(u_name.text.toString(), pass.text.toString(), savedInstanceState )}
-
-        createButton.setOnClickListener {
-            myUsername = u_name.text.toString()
-            createAccount(u_name.text.toString(), pass.text.toString() )}
-
+        savedInstance = savedInstanceState
         queue = Volley.newRequestQueue(this)
+        showLoginScreen()
+
         //startMapActivity(savedInstanceState)
 
     }
@@ -104,7 +93,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
                 val settings_button : Button = findViewById(R.id.settings_button)
                 settings_button.setOnClickListener {
 
-                    showSettingspage()
+                    showSettingsPage()
                 }
                 startScreenRefresh()
 
@@ -113,7 +102,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
 
     }
 
-    private fun showSettingspage()
+    private fun showSettingsPage()
     {
 
         val settingspage : LinearLayout = findViewById(R.id.llayout)
@@ -134,22 +123,24 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         }, 10000)
     }
 
-    private fun login(username : String, password : String, savedInstanceState: Bundle?){
+    private fun login(username : String, password : String){
 
         // Request a string response from the provided URL.
 
+        myUsername = username
         val json= JSONObject()
         val userJSON = JSONObject()
-        userJSON.put("name", myUsername)
+        userJSON.put("name", username)
+        userJSON.put("password", password)
         json.put("request", "login")
         json.put("params",userJSON)
 
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.POST, url, json,
             { response ->
-                Toast.makeText( this, "login" as String, Toast.LENGTH_LONG).show()
+                Toast.makeText( this, response.get("status") as String, Toast.LENGTH_LONG).show()
                 Log.d("yolo", response.toString())
-                handleLogin(response, savedInstanceState)
+                handleLogin(response, savedInstance)
             },
             { Toast.makeText( this, "no response", Toast.LENGTH_LONG).show() })
         jsonObjectRequest.setRetryPolicy(
@@ -161,7 +152,29 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         queue.add(jsonObjectRequest)
     }
 
-    private fun createAccount(username : String, password : String)
+    private fun createAccount()
+    {
+
+        setContentView(R.layout.new_account_page)
+
+        val createButton : Button = findViewById(R.id.create_button)
+        val usernamePrompt : EditText = findViewById(R.id.chose_user_id)
+        val passwordPrompt : EditText = findViewById(R.id.chose_password)
+        val passwordCheck : EditText = findViewById(R.id.verify_password)
+
+        createButton.setOnClickListener {
+            if(passwordPrompt.text.toString() == passwordCheck.text.toString())
+            {
+                createAccountRequest(usernamePrompt.text.toString(), passwordPrompt.text.toString())
+            }
+            else
+            {
+                Toast.makeText(this, "password doesn't match", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun createAccountRequest(username: String, password: String)
     {
 
         val json = JSONObject()
@@ -172,8 +185,18 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         json.put("params", userJSON)
 
         val createAccountRequest= JsonObjectRequest(Request.Method.POST, url, json, {response->
-            Toast.makeText( this, response.get("status") as String, Toast.LENGTH_LONG).show()
-        }, {})
+            if(response.get("status") as String == "ok")
+            {
+                showLoginScreen()
+                Toast.makeText(this, "Account successfully created, you can now log in with your password", Toast.LENGTH_SHORT ).show()
+            }
+            else
+            {
+                Toast.makeText(this, "Error : " + (response.get("params") as JSONObject).get("description"), Toast.LENGTH_SHORT ).show()
+            }
+        }, {
+            Toast.makeText(this, "Server not responding", Toast.LENGTH_SHORT ).show()
+        })
         createAccountRequest.setRetryPolicy(
             DefaultRetryPolicy(
                 4000,
@@ -181,6 +204,23 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
 
         queue.add(createAccountRequest)
+
+    }
+
+    private fun showLoginScreen()
+    {
+        setContentView(R.layout.login_page)
+        var u_name : EditText = findViewById(R.id.user_id)
+        var pass : EditText = findViewById(R.id.password)
+        var loginButton : Button = findViewById(R.id.login_button)
+        var createAccountText : TextView = findViewById(R.id.create_account)
+
+        loginButton.setOnClickListener {
+            myUsername = u_name.text.toString()
+            login(u_name.text.toString(), pass.text.toString())}
+
+        createAccountText.setOnClickListener {
+            createAccount()}
 
     }
 
@@ -301,11 +341,35 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
             0,0)
     }
 
+    private fun logout()
+    {
+        val json= JSONObject()
+        val userJSON = JSONObject()
+        userJSON.put("name", myUsername)
+        json.put("request", "logout")
+        json.put("params",userJSON)
+
+        val jsonObjectRequest = JsonObjectRequest(
+            Request.Method.POST, url, json,
+            {
+            },
+            { })
+        jsonObjectRequest.setRetryPolicy(
+            DefaultRetryPolicy(
+                4000,
+                1,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+        )
+        queue.add(jsonObjectRequest)
+
+    }
+
     @SuppressLint("MissingPermission")
     private fun enableLocationComponent(loadedMapStyle: Style) {
 
 // Check if permissions are enabled and if not request
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
+
 
 // Create and customize the LocationComponent's options
             val customLocationComponentOptions = LocationComponentOptions.builder(this)
@@ -380,6 +444,7 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
     }
 
     override fun onDestroy() {
+        logout()
         super.onDestroy()
         mapView?.onDestroy()
 

@@ -40,7 +40,7 @@ import org.json.JSONObject
  * status bar and navigation/system bar) with user interaction.
  */
 
-class FullscreenActivity : AppCompatActivity(), PermissionsListener {
+class OldActivity : AppCompatActivity(), PermissionsListener {
 
     private var mapView: MapView? = null
     private var permissionsManager: PermissionsManager = PermissionsManager(this)
@@ -63,12 +63,11 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
         showLoginScreen()
 
         //startMapActivity(savedInstanceState)
-
     }
 
     private fun startMapActivity(savedInstanceState: Bundle?){
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token))
-        setContentView(R.layout.activity_fullscreen)
+        setContentView(R.layout.activity_map)
         mySkin = "skin1"
 
         mapView = findViewById(R.id.mapView)
@@ -104,7 +103,6 @@ class FullscreenActivity : AppCompatActivity(), PermissionsListener {
 
     private fun showSettingsPage()
     {
-
         val settingspage : LinearLayout = findViewById(R.id.llayout)
         (mapView as MapView).isVisible=false
         settingspage.isVisible=true

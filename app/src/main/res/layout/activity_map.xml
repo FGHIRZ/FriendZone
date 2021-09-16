@@ -5,7 +5,7 @@
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              android:background="?attr/fullscreenBackgroundColor"
-             tools:context=".FullscreenActivity">
+             tools:context=".OldActivity">
 
     <com.mapbox.mapboxsdk.maps.MapView
             android:id="@+id/mapView"

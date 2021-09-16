@@ -2,7 +2,9 @@
     <string name="app_name">FriendZone</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="mapbox_access_token">pk.eyJ1IjoibWVldGdhbWVwcm9qZWN0IiwiYSI6ImNrdDhwdGZydTE0bHQycG83Nnh5dTRtZzkifQ.PrR9ZjvLjRT_7D0WkjsCIQ</string>
+    <string name="mapbox_access_token">
+        pk.eyJ1IjoibWVldGdhbWVwcm9qZWN0IiwiYSI6ImNrdDhwdGZydTE0bHQycG83Nnh5dTRtZzkifQ.PrR9ZjvLjRT_7D0WkjsCIQ
+    </string>
     <string name="mapbox_style_url">mapbox://styles/meetgameproject/ckt8pxo7y28vs19v1qlyjrk8v</string>
     <string name="user_location_permission_explanation">yoyo</string>
     <string name="user_location_permission_not_granted">oh no</string>

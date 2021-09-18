@@ -12,6 +12,8 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import org.json.JSONArray
 import org.json.JSONObject
+import java.math.BigInteger
+import java.security.MessageDigest
 
 class RequestHandler {
 
@@ -30,13 +32,14 @@ class RequestHandler {
         val json_request = JSONObject()
         val user_json = JSONObject()
         user_json.put("name", username)
-        user_json.put("password", password)
+        user_json.put("password", md5(password))
         json_request.put("request", "login")
         json_request.put("params", user_json)
 
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.POST, server_url, json_request,
             { response ->
+                Log.d("requestHandler", response.toString())
                 if((response.get("status") as String) == "ok") {
                     Toast.makeText(activity, response.get("status") as String, Toast.LENGTH_SHORT).show()
                     val user_id = ((response.get("params") as JSONObject).get("user_id")) as Int
@@ -45,7 +48,7 @@ class RequestHandler {
                     val user = User(user_id)
                     user.username = username
                     user.skin = skin
-                    (activity as Login).returnLogin(user)
+                    (activity as Login).startMapActivity(user)
                 }
                 else
                 {
@@ -63,22 +66,24 @@ class RequestHandler {
         queue.add(jsonObjectRequest)
     }
 
-    private fun requestCreateAccount(username: String, password: String, activity: Activity)
+    fun requestAccountCreation(username: String, password: String, activity: Activity)
     {
         val json = JSONObject()
         val userJSON= JSONObject()
         userJSON.put("name", username)
-        userJSON.put("password", password)
+        userJSON.put("password", md5(password))
         json.put("request", "create_account")
         json.put("params", userJSON)
 
         val createAccountRequest= JsonObjectRequest(Request.Method.POST, server_url, json, {response->
-            if(response.get("status") as String == "ok")
+            Log.d("requestHandler", response.toString())
+            if(response.getString("status") == "ok")
             {
-                Toast.makeText(activity, "ahha", Toast.LENGTH_SHORT).show()
+                (activity as AccountCreation).success()
             }
             else
             {
+                Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
             }
         }, {
         })
@@ -91,7 +96,7 @@ class RequestHandler {
         queue.add(createAccountRequest)
     }
 
-    private fun requestUserList(location : Location, user : User, activity: Activity){
+    fun requestUserList(location : Location, user : User, visibile : Boolean, activity: Activity){
 
         // Request a string response from the provided URL.
 
@@ -102,15 +107,23 @@ class RequestHandler {
         val userJSON = JSONObject()
         userJSON.put("user_id", user.id)
         userJSON.put("location", locationJSON)
+        userJSON.put("visible", visibile)
         json.put("request", "update")
         json.put("params",userJSON)
 
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.POST, server_url, json,
             { response ->
-
+                Log.d("requestPage", response.toString())
+                val userList = response.getJSONObject("params").getJSONArray("user_list")
+                (activity as MainActivity).updateUserList(userList)
             },
             { })
         queue.add(jsonObjectRequest)
+    }
+
+    fun md5(input:String): String {
+        val md = MessageDigest.getInstance("MD5")
+        return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
     }
 }

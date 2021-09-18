@@ -12,6 +12,32 @@
             android:layout_height="match_parent"
             mapbox:mapbox_cameraTargetLat="-32.557013"
             mapbox:mapbox_cameraTargetLng="-56.149056"
-            mapbox:mapbox_cameraZoom="5.526846"/>
+            mapbox:mapbox_cameraZoom="5.526846"
+            mapbox:mapbox_cameraTilt="60">
+    </com.mapbox.mapboxsdk.maps.MapView>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:orientation="horizontal"
+            android:background="@color/mapbox_blue"
+            android:gravity="center">
+        <Button
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:layout_margin="10dp"
+                android:text="settings"
+                android:id="@+id/settings_button"
+        >
+        </Button>
+        <Button
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+        >
+        </Button>
+    </LinearLayout>
 
 </FrameLayout>

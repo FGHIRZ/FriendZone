@@ -2,18 +2,22 @@ package com.example.friendzone
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.provider.AlarmClock.EXTRA_MESSAGE
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.LocationComponentOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
@@ -22,9 +26,16 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
+import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.prefs.Preferences
+import kotlin.reflect.typeOf
 
 class MainActivity : AppCompatActivity(), PermissionsListener {
 
+    private var editor: SharedPreferences.Editor? = null
+    private var pref: SharedPreferences? = null
     private lateinit var textview : TextView
     private val requestHandler = RequestHandler()
     var permissionsManager: PermissionsManager = PermissionsManager(this)
@@ -34,8 +45,16 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     lateinit var mapboxMap: MapboxMap
     private lateinit var activity : Activity
     private var savedInstance : Bundle? = null
+    
+    private var users = mutableListOf<User>()
 
     private var mapUrl = "mapbox://styles/meetgameproject/ckt8pxo7y28vs19v1qlyjrk8v"
+
+    private lateinit var client : User
+
+    private lateinit var mapStyle : Style
+
+    private var userIsVisible = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,42 +63,101 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
 
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
         setContentView(R.layout.activity_map)
-
+        val intent = intent
+        val userString = intent.getStringExtra("USER_INFO")
+        val userJSON = JSONObject(userString)
+        client= User(userJSON.getInt("user_id"))
+        client.skin = userJSON.getString("skin")
         mapView = findViewById(R.id.mapView);
         mapView?.onCreate(savedInstanceState);
+        loadMap()
+        val settingsButton : Button = findViewById(R.id.settings_button)
 
-        login()
+        settingsButton.setOnClickListener {
+            val settingsIntent = Intent(this, Settings::class.java)
+            startActivity(settingsIntent)
+        }
     }
 
-    private fun login() {
-        var getLogin = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
-        { result: ActivityResult ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                startMap()
-            }
-        }
-        val intent: Intent = Intent(this, Login::class.java).apply {
-            putExtra(EXTRA_MESSAGE, "yoyo")
-            getLogin.launch(intent)
-        }
-        startActivity(intent)
-    }
-
-    private fun startMap()
+    private fun loadMap()
     {
         mapView?.getMapAsync { mapboxMap ->
 
             mapboxMap.setStyle(Style.Builder().fromUri(resources.getString(R.string.mapbox_style_url))) {
                 this.mapboxMap = mapboxMap
-                enableLocationComponent(it)
+                this.mapStyle = it
                 mapboxMap.setMinZoomPreference(2.00)
 
-                // Create a SymbolManager.
-                val mv : MapView = mapView as MapView
-                symbolManager = SymbolManager(mv, mapboxMap, it)
+                symbolManager = SymbolManager(mapView!!, mapboxMap, it)
                 symbolManager.iconAllowOverlap = true
                 symbolManager.iconIgnorePlacement = true
 
+                enableLocationComponent(it)
+                updateLoop()
+
+
+            }
+        }
+    }
+
+    private fun updateLoop(){
+        val location = mapboxMap.locationComponent.lastKnownLocation!!
+        requestHandler.requestUserList(location, client, userIsVisible, this)
+        Handler(Looper.getMainLooper()).postDelayed({
+            updateLoop()
+        }, 10000)
+    }
+
+    fun updateUserList(userList : JSONArray)
+    {
+        Log.d("MapActivity", "doing the function")
+        Log.d("MapActivity", userList.length().toString())
+        for(i in 0 until userList.length())
+        {
+            //Check if user is already in list & update its position
+
+            val new_user : JSONObject = userList[i] as JSONObject
+            var userFound = false
+            for (user in users)
+            {
+                if(user.id==new_user.getInt("user_id"))
+                {
+                    user.symbol!!.latLng = LatLng(new_user.getDouble("lat"), new_user.getDouble("lon"))
+                    userFound = true
+                    user.match = true
+                    Log.d("MapActivit", "user found")
+                }
+            }
+
+            //if not, create a new user
+            if(!userFound)
+            {
+                Log.d("MapActivit", "user not found : " + new_user.getInt("user_id").toString())
+
+                val symbol = symbolManager.create(
+                    SymbolOptions()
+                        .withLatLng(LatLng(new_user.getDouble("lat"), new_user.getDouble("lon")))
+                        .withIconImage("airport-11")
+                        .withIconSize(1.3f))
+
+                val user = User(new_user.getInt("user_id"))
+                user.symbol=symbol
+                user.match= true
+                users.add(user)
+            }
+        }
+        for(user in users)
+        {
+            if(!user.match)
+            {
+                symbolManager.delete(user.symbol)
+                Log.d("user deleted", "a")
+                users.remove(user)
+            }
+            else
+            {
+                symbolManager.update(user.symbol)
+                user.match=false
             }
         }
     }
@@ -95,7 +173,6 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
             finish()
         }
     }
-
 
     @SuppressLint("MissingPermission")
     private fun enableLocationComponent(loadedMapStyle: Style) {
@@ -141,24 +218,34 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         }
     }
 
-    /*
-    private fun refreshMap(){
-        val location = MapHandler.mapboxMap.locationComponent.lastKnownLocation!!
-        requestHandler.requestUserList(location)
-        Handler(Looper.getMainLooper()).postDelayed({
-            startScreenRefresh()
-        }, 10000)
-    }*/
-
-    /*
-private fun refreshScreen()
-{
-    for(user in users)
+    private fun openSettingsPage()
     {
-        symbolManager.update(user.symbol)
+        val settingsIntent = Intent(this, Settings::class.java)
+        startActivity(settingsIntent)
     }
-}
 
+    /*
+private fun showLoginPage() {
+    var getLogin = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+    { result: ActivityResult ->
+        Log.d("callback", result.toString())
+        if (result.resultCode == Activity.RESULT_OK) {
+            Log.d("Mapactivity", result.data.toString())
+            val userString = result.data!!.data.toString()
+            val userJSON = JSONObject(userString)
+            client= User(userJSON.getInt("user_id"))
+            client.skin = userJSON.getString("skin")
+            updateLoop()
+        }
+    }
+    val intent: Intent = Intent(this, Login::class.java).apply {
+        putExtra(EXTRA_MESSAGE, "yoyo")
+    }
+    getLogin.launch(intent)
+}*/
+
+
+/*
 
 private fun showEventWindow()
 {

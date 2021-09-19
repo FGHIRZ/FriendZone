@@ -4,14 +4,15 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
+import android.view.LayoutInflater
+import android.widget.*
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.mapbox.android.core.permissions.PermissionsListener
@@ -29,13 +30,17 @@ import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.prefs.Preferences
-import kotlin.reflect.typeOf
 
 class MainActivity : AppCompatActivity(), PermissionsListener {
 
-    private var editor: SharedPreferences.Editor? = null
-    private var pref: SharedPreferences? = null
+
+
+    val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+    {
+            result: ActivityResult ->
+        this.updateSettings()
+    }
+
     private lateinit var textview : TextView
     private val requestHandler = RequestHandler()
     var permissionsManager: PermissionsManager = PermissionsManager(this)
@@ -47,6 +52,8 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     private var savedInstance : Bundle? = null
     
     private var users = mutableListOf<User>()
+    private var events = mutableListOf<Event>()
+
 
     private var mapUrl = "mapbox://styles/meetgameproject/ckt8pxo7y28vs19v1qlyjrk8v"
 
@@ -55,6 +62,10 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     private lateinit var mapStyle : Style
 
     private var userIsVisible = true
+    private var viewOthers = true
+
+    private var PRIVATE_MODE = 0
+    private val PREF_NAME = "friendzone-app"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,10 +84,18 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         loadMap()
         val settingsButton : Button = findViewById(R.id.settings_button)
 
+        val sharedPref = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        updateSettings()
+
         settingsButton.setOnClickListener {
-            val settingsIntent = Intent(this, Settings::class.java)
-            startActivity(settingsIntent)
+            openSettingsPage()
         }
+    }
+
+    private fun openSettingsPage()
+    {
+        val settingsIntent = Intent(this, Settings::class.java)
+        settingsLauncher.launch(settingsIntent)
     }
 
     private fun loadMap()
@@ -92,26 +111,106 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
                 symbolManager.iconAllowOverlap = true
                 symbolManager.iconIgnorePlacement = true
 
+                //loadSkins(mapboxMap)
                 enableLocationComponent(it)
                 updateLoop()
+
+                mapboxMap.addOnMapLongClickListener {
+                    showEventCreationWindow(it)
+                }
 
 
             }
         }
     }
 
+    fun updateSettings()
+    {
+        val sharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        userIsVisible = sharedPreferences.getBoolean("USER_VISIBILITY", true)
+        viewOthers = sharedPreferences.getBoolean("VIEW_OTHERS", true)
+
+        if(!viewOthers)
+        {
+            delete_user_list()
+        }
+
+    }
+
+    private fun delete_user_list()
+    {
+        for(user in users)
+        {
+            symbolManager.delete(user.symbol)
+            users.remove(user)
+        }
+    }
+
     private fun updateLoop(){
         val location = mapboxMap.locationComponent.lastKnownLocation!!
-        requestHandler.requestUserList(location, client, userIsVisible, this)
+        if(viewOthers)
+        {
+            requestHandler.requestUserList(location, client, userIsVisible, this)
+        }
+        requestHandler.requestEventList(location, this)
         Handler(Looper.getMainLooper()).postDelayed({
             updateLoop()
         }, 10000)
     }
 
+    fun updateEventList(eventList : JSONArray)
+    {
+        for(i in 0 until eventList.length())
+        {
+            //Check if user is already in list & update its position
+
+            val new_event : JSONObject = eventList[i] as JSONObject
+            var eventFound = false
+            for (event in events)
+            {
+                if(event.event_id==new_event.getInt("event_id"))
+                {
+                    event.symbol!!.latLng = LatLng(new_event.getDouble("lat"), new_event.getDouble("lon"))
+                    eventFound = true
+                    event.match = true
+                }
+            }
+
+            //if not, create a new user
+            if(!eventFound)
+            {
+                val symbol = symbolManager.create(
+                    SymbolOptions()
+                        .withLatLng(LatLng(new_event.getDouble("lat"), new_event.getDouble("lon")))
+                        .withIconImage(new_event.getString("type"))
+                        .withIconSize( 1.2f))
+
+                val event = Event(new_event.getInt("event_id"))
+                event.type=new_event.getString("type")
+                event.symbol=symbol
+                event.match= true
+                events.add(event)
+            }
+        }
+
+        for(event in events)
+        {
+            if(!event.match)
+            {
+                symbolManager.delete(event.symbol)
+                users.remove(event)
+            }
+            else
+            {
+                symbolManager.update(event.symbol)
+                event.match=false
+            }
+        }
+    }
+
+
     fun updateUserList(userList : JSONArray)
     {
-        Log.d("MapActivity", "doing the function")
-        Log.d("MapActivity", userList.length().toString())
         for(i in 0 until userList.length())
         {
             //Check if user is already in list & update its position
@@ -120,25 +219,22 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
             var userFound = false
             for (user in users)
             {
-                if(user.id==new_user.getInt("user_id"))
+                if(user.user_id==new_user.getInt("user_id"))
                 {
                     user.symbol!!.latLng = LatLng(new_user.getDouble("lat"), new_user.getDouble("lon"))
                     userFound = true
                     user.match = true
-                    Log.d("MapActivit", "user found")
                 }
             }
 
             //if not, create a new user
             if(!userFound)
             {
-                Log.d("MapActivit", "user not found : " + new_user.getInt("user_id").toString())
-
                 val symbol = symbolManager.create(
                     SymbolOptions()
                         .withLatLng(LatLng(new_user.getDouble("lat"), new_user.getDouble("lon")))
-                        .withIconImage("airport-11")
-                        .withIconSize(1.3f))
+                        .withIconImage(new_user.getString("skin"))
+                        .withIconSize( 1.0f))
 
                 val user = User(new_user.getInt("user_id"))
                 user.symbol=symbol
@@ -146,6 +242,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
                 users.add(user)
             }
         }
+
         for(user in users)
         {
             if(!user.match)
@@ -185,11 +282,8 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
             val customLocationComponentOptions = LocationComponentOptions.builder(this)
                 .trackingGesturesManagement(true)
                 .accuracyColor(ContextCompat.getColor(this, R.color.light_blue_600))
-
-                .minZoomIconScale(2.0f)
+                .minZoomIconScale(1.0f)
                 .bearingTintColor(R.color.black)
-                .backgroundDrawable(R.drawable.skin1)
-                .foregroundDrawable(R.drawable.skin1)
                 .build()
 
             val locationComponentActivationOptions = LocationComponentActivationOptions.builder(this, loadedMapStyle)
@@ -209,7 +303,8 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
                 cameraMode = CameraMode.TRACKING
 
 // Set the LocationComponent's render mode
-                renderMode = RenderMode.COMPASS
+                renderMode = RenderMode.NORMAL
+
 
             }
         } else {
@@ -218,37 +313,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         }
     }
 
-    private fun openSettingsPage()
-    {
-        val settingsIntent = Intent(this, Settings::class.java)
-        startActivity(settingsIntent)
-    }
-
-    /*
-private fun showLoginPage() {
-    var getLogin = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
-    { result: ActivityResult ->
-        Log.d("callback", result.toString())
-        if (result.resultCode == Activity.RESULT_OK) {
-            Log.d("Mapactivity", result.data.toString())
-            val userString = result.data!!.data.toString()
-            val userJSON = JSONObject(userString)
-            client= User(userJSON.getInt("user_id"))
-            client.skin = userJSON.getString("skin")
-            updateLoop()
-        }
-    }
-    val intent: Intent = Intent(this, Login::class.java).apply {
-        putExtra(EXTRA_MESSAGE, "yoyo")
-    }
-    getLogin.launch(intent)
-}*/
-
-
-/*
-
-private fun showEventWindow()
-{
+    private fun showEventCreationWindow(location : LatLng): Boolean {
     val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
     // Inflate a custom view using layout inflater
@@ -257,11 +322,12 @@ private fun showEventWindow()
     // Initialize a new instance of popup window
     val popupWindow = PopupWindow(
         view, // Custom view to show in popup window
-        LinearLayout.LayoutParams.WRAP_CONTENT, // Width of popup window
-        LinearLayout.LayoutParams.WRAP_CONTENT // Window height
+        LinearLayout.LayoutParams.MATCH_PARENT, // Width of popup window
+        LinearLayout.LayoutParams.WRAP_CONTENT// Window height
     )
     val button= view.findViewById<Button>(R.id.button_popup)
     button.setOnClickListener {
+        createEvent(location)
         popupWindow.dismiss()
     }
 
@@ -269,8 +335,15 @@ private fun showEventWindow()
         ,
         1,
         0,0)
+    return true
+
 }
-*/
+
+    private fun createEvent(location : LatLng)
+    {
+        requestHandler.requestEventCreation(client.user_id, "event_test_icon", location, this)
+    }
+
     override fun onResume() {
         super.onResume()
         mapView!!.onResume()

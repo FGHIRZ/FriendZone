@@ -2,12 +2,11 @@ package com.example.friendzone
 
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol
 
-class User constructor(user_id : Int)
-{
+class Event constructor(event_id: Int) {
 
-    var user_id = user_id
-    var username = ""
-    var skin = ""
+    var event_id = event_id
+    var type = ""
+    var icon = ""
     var symbol : Symbol? = null
     var match=false
 

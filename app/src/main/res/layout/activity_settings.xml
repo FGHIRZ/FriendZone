@@ -44,7 +44,7 @@
             <Switch
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/visibility_switch_2"
+                    android:id="@+id/view_others_switch"
                     android:layout_weight="1"/>
         </LinearLayout>
 

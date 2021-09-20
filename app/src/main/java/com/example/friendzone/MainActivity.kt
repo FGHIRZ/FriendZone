@@ -35,13 +35,23 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
 
 
 
-    val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+    private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
-            result: ActivityResult ->
-        if(result.resultCode==Activity.RESULT_CANCELED)
-        {
-            finish()
-        }
+        result: ActivityResult ->
+            Log.d("YOLO", "C BIZAR")
+            if(result.resultCode==Activity.RESULT_OK)
+            {
+                    Log.d("TYOLO", result.data.toString())
+                    if(result.data != null)
+                    {
+                        if(result.data!!.getBooleanExtra("LOGOUT", false))
+                        {
+                            val intent = Intent(this, Login::class.java)
+                            startActivity(intent)
+                            finish()
+                        }
+                    }
+            }
         this.updateSettings()
     }
 
@@ -271,7 +281,6 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         if (granted) {
         } else {
             Toast.makeText(this, R.string.user_location_permission_not_granted, Toast.LENGTH_LONG).show()
-            finish()
         }
     }
 

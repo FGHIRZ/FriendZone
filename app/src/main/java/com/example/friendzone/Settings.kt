@@ -47,8 +47,6 @@ class Settings : AppCompatActivity() {
         logout_button.setOnClickListener {
             logout(pref, editor)
         }
-
-
     }
 
     private fun openAccountManagement()
@@ -63,10 +61,9 @@ class Settings : AppCompatActivity() {
         editor.apply()
 
         val returnIntent = Intent()
-        setResult(RESULT_CANCELED, returnIntent)
+        returnIntent.putExtra("LOGOUT", true)
+        setResult(RESULT_OK, returnIntent)
 
-        val intent = Intent(this, Login::class.java)
-        startActivity(intent)
         finish()
     }
 }

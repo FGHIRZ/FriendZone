@@ -15,7 +15,7 @@ class ChangeUsername : AppCompatActivity() {
 
         val username : EditText = findViewById(R.id.new_username_edittext)
         val password : EditText = findViewById(R.id.check_password_edittext)
-        val button : Button = findViewById(R.id.change_username_button)
+        val button : Button = findViewById(R.id.send_new_username_button)
 
         button.setOnClickListener {
             requestHandler.requestUsernameChange()

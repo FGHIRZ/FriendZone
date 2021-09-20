@@ -18,7 +18,6 @@ class ChangeUsername : AppCompatActivity() {
         setContentView(R.layout.activity_change_username)
 
         val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
-
         val user_id = sharedPref.getInt("user_id", 0)
 
         val username : EditText = findViewById(R.id.new_username_edittext)

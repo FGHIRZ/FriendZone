@@ -323,6 +323,37 @@ class RequestHandler {
         queue.add(changeUsernameRequest)
     }
 
+    fun requestPasswordChange(user_id: Int, password: String, new_password: String,activity: Activity) {
+
+        val json = JSONObject()
+        val userJSON= JSONObject()
+
+        userJSON.put("user_id", user_id)
+        userJSON.put("password", password)
+        userJSON.put("new_password", new_password)
+        json.put("request", "change_password")
+        json.put("params", userJSON)
+
+        val changePasswordRequest= JsonObjectRequest(Request.Method.POST, server_url, json, {response->
+            Log.d("requestHandler", response.toString())
+            if(response.getString("status") == "ok")
+            {
+                (activity as AccountCreation).success()
+            }
+            else
+            {
+                Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
+            }
+        }, {
+        })
+        changePasswordRequest.setRetryPolicy(
+            DefaultRetryPolicy(
+                4000,
+                1,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+
+        queue.add(changePasswordRequest)
+    }
     fun requestAccountDeletion(username: String, password: String, activity: Activity) {
         val json = JSONObject()
         val userJSON= JSONObject()
@@ -351,35 +382,5 @@ class RequestHandler {
 
         queue.add(deleteAccountRequest)
 
-    }
-
-    fun requestPasswordChange(username: String, password: String, new_password: String,activity: Activity) {
-        val json = JSONObject()
-        val userJSON= JSONObject()
-        userJSON.put("name", username)
-        userJSON.put("password", md5(password))
-        userJSON.put("new_password", md5(new_password))
-        json.put("request", "delete_account")
-        json.put("params", userJSON)
-
-        val changePasswordRequest= JsonObjectRequest(Request.Method.POST, server_url, json, {response->
-            Log.d("requestHandler", response.toString())
-            if(response.getString("status") == "ok")
-            {
-                (activity as AccountCreation).success()
-            }
-            else
-            {
-                Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
-            }
-        }, {
-        })
-        changePasswordRequest.setRetryPolicy(
-            DefaultRetryPolicy(
-                4000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
-
-        queue.add(changePasswordRequest)
     }
 }

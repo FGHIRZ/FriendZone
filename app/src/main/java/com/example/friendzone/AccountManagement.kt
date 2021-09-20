@@ -28,7 +28,7 @@ class AccountManagement : AppCompatActivity() {
         }
 
         deleteButton.setOnClickListener {
-            requestHandler.requestAccountDeletion()
+//            requestHandler.requestAccountDeletion()
         }
     }
 }

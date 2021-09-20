@@ -16,7 +16,7 @@ class ChangePassword : AppCompatActivity() {
         val new_password : EditText = findViewById(R.id.new_password_edittext)
         val new_password_repeat : EditText = findViewById(R.id.repeat_new_password_edittext)
         val password : EditText = findViewById(R.id.old_password_edittext)
-        val button : Button = findViewById(R.id.change_username_button)
+        val button : Button = findViewById(R.id.send_new_password_button)
 
         button.setOnClickListener {
 

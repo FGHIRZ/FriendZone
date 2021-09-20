@@ -13,6 +13,7 @@ class ChangePassword : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_change_password)
 
+        requestHandler.initialize(this)
         val new_password : EditText = findViewById(R.id.new_password_edittext)
         val new_password_repeat : EditText = findViewById(R.id.repeat_new_password_edittext)
         val password : EditText = findViewById(R.id.old_password_edittext)

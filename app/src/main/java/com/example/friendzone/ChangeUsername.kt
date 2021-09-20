@@ -10,13 +10,17 @@ class ChangeUsername : AppCompatActivity() {
 
     private val requestHandler : RequestHandler = RequestHandler()
 
+
+
     private var PRIVATE_MODE = 0
     private val PREF_NAME = "friendzone-app"
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_change_username)
 
+        requestHandler.initialize(this)
         val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
         val user_id = sharedPref.getInt("user_id", 0)
 
@@ -27,5 +31,6 @@ class ChangeUsername : AppCompatActivity() {
         button.setOnClickListener {
             requestHandler.requestUsernameChange(user_id,username.text.toString(),requestHandler.md5(password.text.toString()),this)
         }
+
     }
 }

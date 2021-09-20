@@ -293,11 +293,12 @@ class RequestHandler {
         return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
     }
 
-    fun requestUsernameChange(username: String, new_username: String, activity: Activity) {
+    fun requestUsernameChange(user_id: Int, new_username: String, password: String, activity: Activity) {
         val json = JSONObject()
         val userJSON= JSONObject()
-        userJSON.put("name", username)
-        userJSON.put("new_name", md5(new_username))
+        userJSON.put("user_id", user_id)
+        userJSON.put("new_name", new_username)
+        userJSON.put("password", password)
         json.put("request", "change_username")
         json.put("params", userJSON)
 

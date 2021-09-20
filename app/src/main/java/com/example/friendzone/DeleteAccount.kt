@@ -17,7 +17,7 @@ class DeleteAccount : AppCompatActivity() {
         val password : EditText = findViewById(R.id.delete_account_password_edittext)
 
         delete_button.setOnClickListener {
-            requestHandler.requestAccountDeletion()
+            //requestHandler.requestAccountDeletion()
         }
     }
 }

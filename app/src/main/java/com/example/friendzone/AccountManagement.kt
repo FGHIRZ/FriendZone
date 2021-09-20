@@ -28,7 +28,8 @@ class AccountManagement : AppCompatActivity() {
         }
 
         deleteButton.setOnClickListener {
-            requestHandler.requestAccountDeletion()
+            val intent = Intent(this, DeleteAccount::class.java)
+            startActivity(intent)
         }
     }
 }

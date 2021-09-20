@@ -20,7 +20,7 @@ class ChangePassword : AppCompatActivity() {
 
         button.setOnClickListener {
 
-            requestHandler.requestPasswordChange()
+            //requestHandler.requestPasswordChange()
         }
     }
 }

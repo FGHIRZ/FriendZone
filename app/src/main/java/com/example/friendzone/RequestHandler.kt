@@ -292,4 +292,16 @@ class RequestHandler {
         val md = MessageDigest.getInstance("MD5")
         return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
     }
+
+    fun requestUsernameChange() {
+        TODO("Not yet implemented")
+    }
+
+    fun requestAccountDeletion() {
+        TODO("Not yet implemented")
+    }
+
+    fun requestPasswordChange() {
+        TODO("Not yet implemented")
+    }
 }

@@ -41,6 +41,7 @@
               android:gravity="center"
               android:id="@+id/change_password_button"
       />
+
     </LinearLayout>
 
     <LinearLayout

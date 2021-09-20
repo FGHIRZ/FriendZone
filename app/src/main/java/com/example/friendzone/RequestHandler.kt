@@ -293,15 +293,92 @@ class RequestHandler {
         return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
     }
 
-    fun requestUsernameChange() {
-        TODO("Not yet implemented")
+    fun requestUsernameChange(username: String, new_username: String, activity: Activity) {
+        val json = JSONObject()
+        val userJSON= JSONObject()
+        userJSON.put("name", username)
+        userJSON.put("new_name", md5(new_username))
+        json.put("request", "change_username")
+        json.put("params", userJSON)
+
+        val changeUsernameRequest = JsonObjectRequest(Request.Method.POST, server_url, json, {response->
+            Log.d("requestHandler", response.toString())
+            if(response.getString("status") == "ok")
+            {
+                (activity as AccountCreation).success()
+            }
+            else
+            {
+                Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
+            }
+        }, {
+        })
+        changeUsernameRequest.setRetryPolicy(
+            DefaultRetryPolicy(
+                4000,
+                1,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+
+        queue.add(changeUsernameRequest)
     }
 
-    fun requestAccountDeletion() {
-        TODO("Not yet implemented")
+    fun requestAccountDeletion(username: String, password: String, activity: Activity) {
+        val json = JSONObject()
+        val userJSON= JSONObject()
+        userJSON.put("name", username)
+        userJSON.put("password", md5(password))
+        json.put("request", "delete_account")
+        json.put("params", userJSON)
+
+        val deleteAccountRequest = JsonObjectRequest(Request.Method.POST, server_url, json, {response->
+            Log.d("requestHandler", response.toString())
+            if(response.getString("status") == "ok")
+            {
+                (activity as AccountCreation).success()
+            }
+            else
+            {
+                Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
+            }
+        }, {
+        })
+        deleteAccountRequest.setRetryPolicy(
+            DefaultRetryPolicy(
+                4000,
+                1,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+
+        queue.add(deleteAccountRequest)
+
     }
 
-    fun requestPasswordChange() {
-        TODO("Not yet implemented")
+    fun requestPasswordChange(username: String, password: String, new_password: String,activity: Activity) {
+        val json = JSONObject()
+        val userJSON= JSONObject()
+        userJSON.put("name", username)
+        userJSON.put("password", md5(password))
+        userJSON.put("new_password", md5(new_password))
+        json.put("request", "delete_account")
+        json.put("params", userJSON)
+
+        val changePasswordRequest= JsonObjectRequest(Request.Method.POST, server_url, json, {response->
+            Log.d("requestHandler", response.toString())
+            if(response.getString("status") == "ok")
+            {
+                (activity as AccountCreation).success()
+            }
+            else
+            {
+                Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
+            }
+        }, {
+        })
+        changePasswordRequest.setRetryPolicy(
+            DefaultRetryPolicy(
+                4000,
+                1,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+
+        queue.add(changePasswordRequest)
     }
 }

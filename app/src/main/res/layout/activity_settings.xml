@@ -56,41 +56,11 @@
             <Button
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Choose Skin"
-                    android:textSize="20dp"
-                    android:gravity="center"
-                    />
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_margin="10dp">
-            <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
                     android:text="Manage Account"
                     android:textSize="20dp"
                     android:gravity="center"
+                    android:id="@+id/account_management_button"
             />
-        </LinearLayout>
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:orientation="horizontal">
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Language"
-                    android:textSize="30dp"/>
-
-            <ListView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="30dp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -103,10 +73,11 @@
             <Button
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Log Off"
+                    android:text="Disconnect"
                     android:textSize="20dp"
                     android:gravity="center"
                     android:backgroundTint="#FFFF006A"
+                    android:id="@+id/logout_button"
             />
         </LinearLayout>
     </LinearLayout>

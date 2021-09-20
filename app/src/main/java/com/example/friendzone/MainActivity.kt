@@ -38,6 +38,10 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
             result: ActivityResult ->
+        if(result.resultCode==Activity.RESULT_CANCELED)
+        {
+            finish()
+        }
         this.updateSettings()
     }
 

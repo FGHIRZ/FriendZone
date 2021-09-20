@@ -37,6 +37,7 @@ class Login : AppCompatActivity() {
         val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
         val auto_login = sharedPref.getBoolean("AUTO_LOGIN", false)
 
+
         val username : EditText = findViewById(R.id.user_id)
         val password : EditText = findViewById(R.id.password)
         val loginButton : Button = findViewById(R.id.login_button)
@@ -49,7 +50,7 @@ class Login : AppCompatActivity() {
 
         loginButton.setOnClickListener {
             requestHandler.requestLogin(username.text.toString(), password.text.toString(), this)
-            val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+
             val editor = sharedPref.edit()
             editor.putString("USERNAME", username.text.toString())
             editor.putString("PASSWORD", requestHandler.md5(password.text.toString()))

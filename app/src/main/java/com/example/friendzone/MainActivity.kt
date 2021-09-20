@@ -26,6 +26,7 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.plugins.annotation.Symbol
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import org.json.JSONArray
@@ -132,8 +133,6 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
                 mapboxMap.addOnMapLongClickListener {
                     showEventCreationWindow(it)
                 }
-
-
             }
         }
     }
@@ -150,6 +149,8 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         }
 
     }
+
+
 
     private fun delete_user_list()
     {
@@ -251,6 +252,11 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
                         .withIconSize( 1.0f))
 
                 val user = User(new_user.getInt("user_id"))
+
+                symbolManager.addClickListener { symbol ->
+                    display_user(user, symbol.latLng)
+                }
+                user.username = new_user.getString("pseudo")
                 user.symbol=symbol
                 user.match= true
                 users.add(user)
@@ -271,6 +277,36 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
                 user.match=false
             }
         }
+    }
+
+    private fun display_user(user : User, location : LatLng) : Boolean
+    {
+        val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        // Inflate a custom view using layout inflater
+        val view = inflater.inflate(R.layout.user_info,mapView,false)
+
+        // Initialize a new instance of popup window
+        val popupWindow = PopupWindow(
+            view, // Custom view to show in popup window
+            LinearLayout.LayoutParams.MATCH_PARENT, // Width of popup window
+            LinearLayout.LayoutParams.MATCH_PARENT// Window height
+        )
+
+        popupWindow.showAtLocation(mapView
+            ,
+            1,
+            0,0)
+
+        Log.d("GROSTEST", user.username)
+        val pseudo_display = view.findViewById<TextView>(R.id.user_info_pseudo)
+        pseudo_display.text = user.username
+        val button= view.findViewById<Button>(R.id.user_info_quit)
+        button.setOnClickListener {
+            popupWindow.dismiss()
+        }
+
+        return true
+
     }
 
     override fun onExplanationNeeded(permissionsToExplain: List<String>) {
@@ -338,6 +374,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         LinearLayout.LayoutParams.MATCH_PARENT, // Width of popup window
         LinearLayout.LayoutParams.WRAP_CONTENT// Window height
     )
+
     val button= view.findViewById<Button>(R.id.button_popup)
     button.setOnClickListener {
         createEvent(location)
@@ -388,3 +425,4 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     }
 
 }
+

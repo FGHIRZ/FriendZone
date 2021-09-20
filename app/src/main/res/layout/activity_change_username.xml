@@ -21,11 +21,12 @@
             <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="new password"
+                    android:hint="new user"
                     android:textSize="20dp"
                     android:gravity="center"
                     android:id="@+id/new_username_edittext"
             />
+
         </LinearLayout>
 
         <LinearLayout
@@ -36,10 +37,11 @@
             <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="old password"
+                    android:hint="enter your password"
                     android:textSize="20dp"
                     android:gravity="center"
                     android:id="@+id/check_password_edittext"
+                    android:inputType="textPassword"
             />
         </LinearLayout>
 

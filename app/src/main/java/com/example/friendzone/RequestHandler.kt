@@ -325,12 +325,13 @@ class RequestHandler {
         queue.add(changeUsernameRequest)
     }
 
-    fun requestPasswordChange(user_id: Int, password: String, new_password: String,activity: Activity) {
+    fun requestPasswordChange(user_id: Int,username: String, password: String, new_password: String,activity: Activity) {
 
         val json = JSONObject()
         val userJSON= JSONObject()
 
         userJSON.put("user_id", user_id)
+        userJSON.put("username", username)
         userJSON.put("password", password)
         userJSON.put("new_password", new_password)
         json.put("request", "change_password")

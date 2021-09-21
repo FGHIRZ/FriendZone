@@ -21,8 +21,8 @@ class ChangePassword : AppCompatActivity() {
 
         requestHandler.initialize(this)
         val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
-        val user_id = sharedPref.getInt("USED_ID", 0)
-
+        val user_id = sharedPref.getInt("USER_ID", 0)
+        val username = sharedPref.getString("USER_USERNAME", "bug")
 
         val new_password : EditText = findViewById(R.id.new_password_edittext)
         val new_password_repeat : EditText = findViewById(R.id.repeat_new_password_edittext)
@@ -31,7 +31,7 @@ class ChangePassword : AppCompatActivity() {
 
         button.setOnClickListener {
             if(new_password.text.toString() == new_password_repeat.text.toString()) {
-                requestHandler.requestPasswordChange(user_id,requestHandler.md5(password.text.toString()),requestHandler.md5(new_password.text.toString()),this)
+                requestHandler.requestPasswordChange(user_id,username!!,requestHandler.md5(password.text.toString()),requestHandler.md5(new_password.text.toString()),this)
             }else{
                 Toast.makeText(this, "Passwords aren't equal!", Toast.LENGTH_SHORT).show()
             }

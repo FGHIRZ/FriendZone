@@ -22,7 +22,7 @@ class ChangeUsername : AppCompatActivity() {
 
         requestHandler.initialize(this)
         val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
-        val user_id = sharedPref.getInt("user_id", 0)
+        val user_id = sharedPref.getInt("USED_ID", 0)
 
         val username : EditText = findViewById(R.id.new_username_edittext)
         val password : EditText = findViewById(R.id.check_password_edittext)

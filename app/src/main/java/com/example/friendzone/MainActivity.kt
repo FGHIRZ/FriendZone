@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -26,7 +25,6 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.plugins.annotation.Symbol
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import org.json.JSONArray
@@ -89,11 +87,13 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
 
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
         setContentView(R.layout.activity_map)
-        val intent = intent
-        val userString = intent.getStringExtra("USER_INFO")
-        val userJSON = JSONObject(userString)
-        client= User(userJSON.getInt("user_id"))
-        client.skin = userJSON.getString("skin")
+
+        val sharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        client= User(sharedPreferences.getInt("USER_ID", 0))
+        client.skin = sharedPreferences.getString("USER_SKIN", "default_skin")!!
+        client.pseudo = sharedPreferences.getString("USER_PSEUDO", "none")!!
+
+        Log.d("GROTEST", client.pseudo)
         mapView = findViewById(R.id.mapView);
         mapView?.onCreate(savedInstanceState);
         loadMap()
@@ -237,6 +237,9 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
                 if(user.user_id==new_user.getInt("user_id"))
                 {
                     user.symbol!!.latLng = LatLng(new_user.getDouble("lat"), new_user.getDouble("lon"))
+                    user.skin=new_user.getString("skin")
+                    user.pseudo = new_user.getString("pseudo")
+                    user.symbol!!.iconImage=user.skin
                     userFound = true
                     user.match = true
                 }
@@ -254,9 +257,9 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
                 val user = User(new_user.getInt("user_id"))
 
                 symbolManager.addClickListener { symbol ->
-                    display_user(user, symbol.latLng)
+                    displayUserMenu(user, symbol.latLng)
                 }
-                user.username = new_user.getString("pseudo")
+                user.pseudo = new_user.getString("pseudo")
                 user.symbol=symbol
                 user.match= true
                 users.add(user)
@@ -279,7 +282,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         }
     }
 
-    private fun display_user(user : User, location : LatLng) : Boolean
+    private fun displayUserMenu(user : User, location : LatLng) : Boolean
     {
         val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         // Inflate a custom view using layout inflater
@@ -289,7 +292,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         val popupWindow = PopupWindow(
             view, // Custom view to show in popup window
             LinearLayout.LayoutParams.MATCH_PARENT, // Width of popup window
-            LinearLayout.LayoutParams.MATCH_PARENT// Window height
+            LinearLayout.LayoutParams.WRAP_CONTENT// Window height
         )
 
         popupWindow.showAtLocation(mapView
@@ -297,9 +300,37 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
             1,
             0,0)
 
-        Log.d("GROSTEST", user.username)
         val pseudo_display = view.findViewById<TextView>(R.id.user_info_pseudo)
-        pseudo_display.text = user.username
+        pseudo_display.text = user.pseudo
+        val button= view.findViewById<Button>(R.id.user_info_quit)
+        button.setOnClickListener {
+            popupWindow.dismiss()
+        }
+
+        return true
+
+    }
+
+    private fun displayMyMenu() : Boolean
+    {
+        val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        // Inflate a custom view using layout inflater
+        val view = inflater.inflate(R.layout.custom_menu,mapView,false)
+
+        // Initialize a new instance of popup window
+        val popupWindow = PopupWindow(
+            view, // Custom view to show in popup window
+            LinearLayout.LayoutParams.MATCH_PARENT, // Width of popup window
+            LinearLayout.LayoutParams.WRAP_CONTENT// Window height
+        )
+
+        popupWindow.showAtLocation(mapView
+            ,
+            1,
+            0,0)
+
+        val pseudo_display = view.findViewById<TextView>(R.id.user_info_pseudo)
+        pseudo_display.text = client.pseudo
         val button= view.findViewById<Button>(R.id.user_info_quit)
         button.setOnClickListener {
             popupWindow.dismiss()
@@ -320,7 +351,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         }
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "ResourceAsColor")
     private fun enableLocationComponent(loadedMapStyle: Style) {
 
 // Check if permissions are enabled and if not request
@@ -333,6 +364,13 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
                 .accuracyColor(ContextCompat.getColor(this, R.color.light_blue_600))
                 .minZoomIconScale(1.0f)
                 .bearingTintColor(R.color.black)
+                .pulseEnabled(true)
+                .backgroundDrawable(R.drawable.ic_shadow)
+                .backgroundDrawableStale(R.drawable.ic_shadow)
+                .foregroundDrawableStale(R.drawable.ic_skin_sourismorte)
+                .foregroundDrawable(R.drawable.ic_skin_sourismorte)
+                .minZoomIconScale(1.2f)
+                .maxZoomIconScale(1.7f)
                 .build()
 
             val locationComponentActivationOptions = LocationComponentActivationOptions.builder(this, loadedMapStyle)
@@ -355,6 +393,9 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
                 renderMode = RenderMode.NORMAL
 
 
+            }
+            mapboxMap.locationComponent.addOnLocationLongClickListener {
+                displayMyMenu()
             }
         } else {
             permissionsManager = PermissionsManager(this)

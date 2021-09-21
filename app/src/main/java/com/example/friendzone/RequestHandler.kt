@@ -25,6 +25,7 @@ class RequestHandler {
         queue = Volley.newRequestQueue(context)
     }
 
+
     fun requestLogin(username: String, password: String, activity : Activity) {
 
         val user : User
@@ -42,12 +43,14 @@ class RequestHandler {
                 Log.d("requestHandler", response.toString())
                 if((response.get("status") as String) == "ok") {
                     Toast.makeText(activity, response.get("status") as String, Toast.LENGTH_SHORT).show()
-                    val user_id = ((response.get("params") as JSONObject).get("user_id")) as Int
-                    val skin = ((response.get("params") as JSONObject).get("skin")) as String
+                    val user_id = response.getJSONObject("params").getInt("user_id")
+                    val skin = response.getJSONObject("params").getString("skin")
+                    val pseudo = response.getJSONObject("params").getString("pseudo")
 
                     val user = User(user_id)
                     user.username = username
                     user.skin = skin
+                    user.pseudo = pseudo
                     (activity as Login).startMapActivity(user)
                 }
                 else
@@ -83,12 +86,10 @@ class RequestHandler {
                 Log.d("requestHandler", response.toString())
                 if((response.get("status") as String) == "ok") {
                     Toast.makeText(activity, response.get("status") as String, Toast.LENGTH_SHORT).show()
-                    val user_id = ((response.get("params") as JSONObject).get("user_id")) as Int
-                    val skin = ((response.get("params") as JSONObject).get("skin")) as String
 
-                    val user = User(user_id)
-                    user.username = username
-                    user.skin = skin
+                    val user = User(response.getJSONObject("params").getInt("user_id"))
+                    user.skin = response.getJSONObject("params").getString("skin")
+                    user.pseudo = response.getJSONObject("params").getString("pseudo")
                     (activity as Login).startMapActivity(user)
                 }
                 else
@@ -381,6 +382,10 @@ class RequestHandler {
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
 
         queue.add(deleteAccountRequest)
+    }
 
+    fun requestSkin( skin : String)
+    {
+        //TODO, récupère les IMAGES HD des skins pour les afficher dans le profile
     }
 }

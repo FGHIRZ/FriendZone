@@ -361,7 +361,7 @@ class RequestHandler {
         val json = JSONObject()
         val userJSON= JSONObject()
         userJSON.put("user_id", user_id)
-        userJSON.put("name", username)
+        userJSON.put("username", username)
         userJSON.put("password", password)
         json.put("request", "delete_account")
         json.put("params", userJSON)

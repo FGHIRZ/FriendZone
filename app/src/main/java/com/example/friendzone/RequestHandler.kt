@@ -55,6 +55,7 @@ class RequestHandler {
                 }
                 else
                 {
+                    (activity as Login).loginError()
                     Toast.makeText(activity, ((response.get("params") as JSONObject).get("description") as String), Toast.LENGTH_SHORT).show()
                 }
             },

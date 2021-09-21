@@ -101,6 +101,18 @@ class Login : AppCompatActivity() {
         finish()
     }
 
+    fun loginError()
+    {
+        val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val editor = sharedPref.edit()
+        editor.putBoolean("AUTO_LOGIN", false)
+        editor.apply()
+
+        val intent = Intent(this, Login::class.java)
+        startActivity(intent)
+        finish()
+    }
+
     private fun showCreateAccountPage() {
         val intent = Intent(this, AccountCreation::class.java)
         getCreateACcount.launch(intent)

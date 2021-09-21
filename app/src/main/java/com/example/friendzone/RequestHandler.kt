@@ -357,11 +357,12 @@ class RequestHandler {
 
         queue.add(changePasswordRequest)
     }
-    fun requestAccountDeletion(username: String, password: String, activity: Activity) {
+    fun requestAccountDeletion(user_id: Int,username: String, password: String, activity: Activity) {
         val json = JSONObject()
         val userJSON= JSONObject()
+        userJSON.put("user_id", user_id)
         userJSON.put("name", username)
-        userJSON.put("password", md5(password))
+        userJSON.put("password", password)
         json.put("request", "delete_account")
         json.put("params", userJSON)
 
@@ -369,7 +370,7 @@ class RequestHandler {
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
-                (activity as AccountCreation).success()
+                (activity as DeleteAccount).success()
             }
             else
             {

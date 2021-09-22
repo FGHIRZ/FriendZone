@@ -1,7 +1,10 @@
 package com.example.friendzone
 
+import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -9,6 +12,8 @@ import android.widget.Toast
 class AccountCreation : AppCompatActivity() {
 
     private val requestHandler : RequestHandler = RequestHandler()
+    private var PRIVATE_MODE = 0
+    private val PREF_NAME = "friendzone-app"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +29,15 @@ class AccountCreation : AppCompatActivity() {
             if(passwordBox.text.toString() == passwordCheckBox.text.toString())
             {
                 requestHandler.requestAccountCreation(usernameBox.text.toString(),passwordBox.text.toString(), this)
+
+                val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+                val editor = sharedPref.edit()
+
+                editor.putBoolean("AUTO_LOGIN", true)
+                editor.putString("USER_USERNAME", usernameBox.text.toString())
+                editor.putString("USER_PASSWORD", requestHandler.md5(passwordBox.text.toString()))
+                editor.apply()
+
             }
             else
             {
@@ -34,7 +48,11 @@ class AccountCreation : AppCompatActivity() {
 
     fun success()
     {
-        Toast.makeText(this, "Account has been created successfully, you can now login", Toast.LENGTH_LONG).show()
-        finish()
+
+        Toast.makeText(this, "Account has been created successfully, you will be auto-logged in", Toast.LENGTH_LONG).show()
+        // launch the map activity
+        val intent = Intent(this, Login::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent)
     }
 }

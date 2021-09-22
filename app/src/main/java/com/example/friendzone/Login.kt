@@ -106,8 +106,6 @@ class Login : AppCompatActivity(), PermissionsListener {
         val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
         val editor = sharedPref.edit()
 
-
-
         editor.putInt("USER_ID", user.user_id)
         editor.putString("USER_SKIN", user.skin)
         editor.putString("USER_PSEUDO", user.pseudo)

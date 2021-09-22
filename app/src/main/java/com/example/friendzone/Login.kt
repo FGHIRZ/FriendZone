@@ -70,6 +70,7 @@ class Login : AppCompatActivity() {
 
                 if(auto_login)
                 {
+                    editor.putBoolean("AUTO_LOGIN", auto_login)
                     editor.putString("USER_USERNAME", username.text.toString())
                     editor.putString("USER_PASSWORD", requestHandler.md5(password.text.toString()))
                     editor.apply()

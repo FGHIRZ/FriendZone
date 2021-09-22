@@ -87,7 +87,7 @@ class RequestHandler {
             { response ->
                 Log.d("requestHandler", response.toString())
                 if((response.get("status") as String) == "ok") {
-                    Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
+                    Toast.makeText(activity, "Bienvenue maître", Toast.LENGTH_LONG).show()
 
                     val user = User(response.getJSONObject("params").getInt("user_id"))
                     user.skin = response.getJSONObject("params").getString("skin")

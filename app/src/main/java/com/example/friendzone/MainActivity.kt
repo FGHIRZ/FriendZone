@@ -237,7 +237,8 @@ class MainActivity : AppCompatActivity(){
                     SymbolOptions()
                         .withLatLng(LatLng(new_user.getDouble("lat"), new_user.getDouble("lon")))
                         .withIconImage(new_user.getString("skin"))
-                        .withIconSize( 1.0f))
+                        .withIconSize( 1.0f)
+                        .withIconOpacity(1.0f))
 
                 val user = User(new_user.getInt("user_id"))
 

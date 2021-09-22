@@ -3,6 +3,7 @@ package com.example.friendzone
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.*
@@ -10,16 +11,18 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.mapbox.android.core.permissions.PermissionsListener
+
+
 import com.mapbox.android.core.permissions.PermissionsManager
-import org.json.JSONObject
 
 
-class Login : AppCompatActivity(), PermissionsListener {
+class Login : AppCompatActivity(), PermissionsListener{
 
 
     var permissionsManager: PermissionsManager = PermissionsManager(this)
 
-    private val requestHandler :RequestHandler = RequestHandler()
+
+    private val requestHandler : RequestHandler = RequestHandler()
     private var getCreateACcount = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     { result: ActivityResult ->
         Log.d("callback", result.toString())
@@ -42,6 +45,7 @@ class Login : AppCompatActivity(), PermissionsListener {
         }
         else {
             permissionsManager = PermissionsManager(this)
+            permissionsManager.listener = this
             permissionsManager.requestLocationPermissions(this)
             Toast.makeText(this, "application can not work without location", Toast.LENGTH_LONG)
         }
@@ -133,14 +137,18 @@ class Login : AppCompatActivity(), PermissionsListener {
         getCreateACcount.launch(intent)
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
     override fun onExplanationNeeded(p0: MutableList<String>?) {
-        "can you give me ?"
+        "YESYESYES"
     }
 
     override fun onPermissionResult(p0: Boolean) {
-        if(p0)
-        {
-            show_login_page()
-        }
+        show_login_page()
     }
+
+
 }

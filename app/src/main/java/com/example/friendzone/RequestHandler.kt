@@ -42,7 +42,7 @@ class RequestHandler {
             { response ->
                 Log.d("requestHandler", response.toString())
                 if((response.get("status") as String) == "ok") {
-                    Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
+                    Toast.makeText(activity, "You have been rickrolled", Toast.LENGTH_LONG).show()
 
                     val user_id = response.getJSONObject("params").getInt("user_id")
                     val skin = response.getJSONObject("params").getString("skin")
@@ -96,6 +96,7 @@ class RequestHandler {
                 }
                 else
                 {
+                    (activity as Login).loginError()
                     Toast.makeText(activity, ((response.get("params") as JSONObject).get("description") as String), Toast.LENGTH_SHORT).show()
                 }
             },

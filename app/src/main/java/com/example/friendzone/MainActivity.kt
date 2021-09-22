@@ -33,26 +33,17 @@ import org.json.JSONObject
 class MainActivity : AppCompatActivity(){
 
 
-    private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
-    {
-        result: ActivityResult ->
-        this.updateSettings()
-    }
 
-    private lateinit var textview : TextView
+
     private val requestHandler = RequestHandler()
 
     private lateinit var symbolManager : SymbolManager
     var mapView: MapView? = null
     lateinit var mapboxMap: MapboxMap
-    private lateinit var activity : Activity
-    private var savedInstance : Bundle? = null
     
     private var users = mutableListOf<User>()
     private var events = mutableListOf<Event>()
 
-
-    private var mapUrl = "mapbox://styles/meetgameproject/ckt8pxo7y28vs19v1qlyjrk8v"
 
     private lateinit var client : User
 
@@ -64,62 +55,54 @@ class MainActivity : AppCompatActivity(){
     private var PRIVATE_MODE = 0
     private val PREF_NAME = "friendzone-app"
 
+    private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+    {
+            result: ActivityResult ->
+        this.updateSettings()
+    }
+
+
+    //Lorsque l'activité est lancée :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        //Initialisation handler
         requestHandler.initialize(this)
 
-        Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
-        setContentView(R.layout.activity_map)
 
+
+        //Lire les infos de l'utilisateur
         val sharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
         client= User(sharedPreferences.getInt("USER_ID", 0))
         client.skin = sharedPreferences.getString("USER_SKIN", "default_skin")!!
         client.pseudo = sharedPreferences.getString("USER_PSEUDO", "none")!!
 
-        Log.d("GROTEST", client.pseudo)
+        //Initialisation de la mapbox & mise en page
+        setContentView(R.layout.activity_map)
+        Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
         mapView = findViewById(R.id.mapView);
         mapView?.onCreate(savedInstanceState);
-        loadMap()
-        val settingsButton : Button = findViewById(R.id.settings_button)
 
-        val sharedPref = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        //Chargement des paramètres de la map (Asynchrone)
+        loadMap()
+
+        //Chargement des settings
         updateSettings()
 
+        //Initialiser bouton settings
+        val settingsButton : Button = findViewById(R.id.settings_button)
         settingsButton.setOnClickListener {
             openSettingsPage()
         }
     }
 
+
+//======================SETTINGS=======================
+    //Ouvre la page des paramètres
     private fun openSettingsPage()
     {
         val settingsIntent = Intent(this, Settings::class.java)
         settingsLauncher.launch(settingsIntent)
-    }
-
-    private fun loadMap() {
-
-            mapView?.getMapAsync { mapboxMap ->
-
-                mapboxMap.setStyle(Style.Builder().fromUri(resources.getString(R.string.mapbox_style_url))) {
-                    this.mapboxMap = mapboxMap
-                    this.mapStyle = it
-                    mapboxMap.setMinZoomPreference(2.00)
-
-                    symbolManager = SymbolManager(mapView!!, mapboxMap, it)
-                    symbolManager.iconAllowOverlap = true
-                    symbolManager.iconIgnorePlacement = true
-
-                    //loadSkins(mapboxMap)
-
-                    enableLocationComponent(it)
-                    updateLoop()
-
-                    mapboxMap.addOnMapLongClickListener {
-                        showEventCreationWindow(it)
-                    }
-                }
-            }
     }
 
     fun updateSettings()
@@ -132,19 +115,12 @@ class MainActivity : AppCompatActivity(){
         {
             delete_user_list()
         }
-
     }
+//=========================================================
 
 
 
-    private fun delete_user_list()
-    {
-        for(user in users)
-        {
-            symbolManager.delete(user.symbol)
-            users.remove(user)
-        }
-    }
+//============================= Updates ========================
 
     private fun updateLoop(){
         val location = mapboxMap.locationComponent.lastKnownLocation!!
@@ -268,6 +244,26 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
+    private fun delete_user_list()
+    {
+        for(user in users)
+        {
+            symbolManager.delete(user.symbol)
+            users.remove(user)
+        }
+    }
+
+    private fun createEvent(location : LatLng)
+    {
+        requestHandler.requestEventCreation(client.user_id, "event_test_icon", location, this)
+    }
+//=====================================================
+
+
+
+
+//========================  User Menus & Popups =============================
+
     private fun displayUserMenu(user : User, location : LatLng) : Boolean
     {
         val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -321,87 +317,119 @@ class MainActivity : AppCompatActivity(){
         button.setOnClickListener {
             popupWindow.dismiss()
         }
-
         return true
-
     }
+
+
+    private fun showEventCreationWindow(location : LatLng): Boolean {
+        val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
+        // Inflate a custom view using layout inflater
+        val view = inflater.inflate(R.layout.pop_event,mapView,false)
+
+        // Initialize a new instance of popup window
+        val popupWindow = PopupWindow(
+            view, // Custom view to show in popup window
+            LinearLayout.LayoutParams.MATCH_PARENT, // Width of popup window
+            LinearLayout.LayoutParams.WRAP_CONTENT// Window height
+        )
+
+        //Paramètre le bouton de retour
+        val button= view.findViewById<Button>(R.id.button_popup)
+        button.setOnClickListener {
+            createEvent(location)
+            popupWindow.dismiss()
+        }
+
+        //Montre la fenêtre
+        popupWindow.showAtLocation(mapView
+            ,
+            1,
+            0,0)
+        return true
+    }
+
+//=====================================================
+
+
+//======================== CONFIGURATION =============================
+
+
+    //Récupère la map sur mapbox studio
+    private fun loadMap() {
+
+        mapView?.getMapAsync { mapboxMap ->
+
+            //Lorsque la map est chargée, on éxecute ce code
+            mapboxMap.setStyle(Style.Builder().fromUri(resources.getString(R.string.mapbox_style_url))) {
+                this.mapboxMap = mapboxMap
+                this.mapStyle = it
+                mapboxMap.setMinZoomPreference(2.00)
+
+                symbolManager = SymbolManager(mapView!!, mapboxMap, it)
+                symbolManager.iconAllowOverlap = true
+                symbolManager.iconIgnorePlacement = true
+
+                //Activer le tracking de l'utilisateur et la balise de localisation
+                enableLocationComponent(it)
+
+                //Commencer la boucle de contrôle principale
+                updateLoop()
+
+            }
+        }
+    }
+
 
     @SuppressLint("MissingPermission", "ResourceAsColor")
     private fun enableLocationComponent(loadedMapStyle: Style) {
 
 // Create and customize the LocationComponent's options
-            val customLocationComponentOptions = LocationComponentOptions.builder(this)
-                .trackingGesturesManagement(true)
-                .accuracyColor(ContextCompat.getColor(this, R.color.light_blue_600))
-                .minZoomIconScale(1.0f)
-                .bearingTintColor(R.color.black)
-                .pulseEnabled(true)
-                .backgroundDrawable(R.drawable.ic_shadow)
-                .backgroundDrawableStale(R.drawable.ic_shadow)
-                .foregroundDrawableStale(R.drawable.ic_skin_sourismorte)
-                .foregroundDrawable(R.drawable.ic_skin_sourismorte)
-                .minZoomIconScale(1.2f)
-                .maxZoomIconScale(1.7f)
-                .build()
+        val customLocationComponentOptions = LocationComponentOptions.builder(this)
+            .trackingGesturesManagement(true)
+            .accuracyColor(ContextCompat.getColor(this, R.color.light_blue_600))
+            .minZoomIconScale(1.0f)
+            .bearingTintColor(R.color.black)
+            .pulseEnabled(true)
+            .backgroundDrawable(R.drawable.ic_shadow)
+            .backgroundDrawableStale(R.drawable.ic_shadow)
+            .foregroundDrawableStale(R.drawable.ic_skin_sourismorte)
+            .foregroundDrawable(R.drawable.ic_skin_sourismorte)
+            .minZoomIconScale(1.2f)
+            .maxZoomIconScale(1.7f)
+            .build()
 
-            val locationComponentActivationOptions = LocationComponentActivationOptions.builder(this, loadedMapStyle)
-                .locationComponentOptions(customLocationComponentOptions)
-                .build()
+        val locationComponentActivationOptions = LocationComponentActivationOptions.builder(this, loadedMapStyle)
+            .locationComponentOptions(customLocationComponentOptions)
+            .build()
 
 // Get an instance of the LocationComponent and then adjust its settings
-            mapboxMap.locationComponent.apply {
+        mapboxMap.locationComponent.apply {
 
 // Activate the LocationComponent with options
-                activateLocationComponent(locationComponentActivationOptions)
+            activateLocationComponent(locationComponentActivationOptions)
 
 // Enable to make the LocationComponent visible
-                isLocationComponentEnabled = true
+            isLocationComponentEnabled = true
 
 // Set the LocationComponent's camera mode
-                cameraMode = CameraMode.TRACKING
+            cameraMode = CameraMode.TRACKING
 
 // Set the LocationComponent's render mode
-                renderMode = RenderMode.NORMAL
+            renderMode = RenderMode.NORMAL
 
 
-            }
-            mapboxMap.locationComponent.addOnLocationLongClickListener {
-                displayMyMenu()
-            }
         }
-
-    private fun showEventCreationWindow(location : LatLng): Boolean {
-    val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-
-    // Inflate a custom view using layout inflater
-    val view = inflater.inflate(R.layout.pop_event,mapView,false)
-
-    // Initialize a new instance of popup window
-    val popupWindow = PopupWindow(
-        view, // Custom view to show in popup window
-        LinearLayout.LayoutParams.MATCH_PARENT, // Width of popup window
-        LinearLayout.LayoutParams.WRAP_CONTENT// Window height
-    )
-
-    val button= view.findViewById<Button>(R.id.button_popup)
-    button.setOnClickListener {
-        createEvent(location)
-        popupWindow.dismiss()
+        mapboxMap.locationComponent.addOnLocationLongClickListener {
+            displayMyMenu()
+        }
     }
 
-    popupWindow.showAtLocation(mapView
-        ,
-        1,
-        0,0)
-    return true
+//===============================================================
 
-}
 
-    private fun createEvent(location : LatLng)
-    {
-        requestHandler.requestEventCreation(client.user_id, "event_test_icon", location, this)
-    }
 
+//Fonctions de l'activité
     override fun onResume() {
         super.onResume()
         mapView!!.onResume()

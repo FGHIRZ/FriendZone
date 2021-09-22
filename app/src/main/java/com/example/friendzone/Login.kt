@@ -33,9 +33,10 @@ class Login : AppCompatActivity() {
         setContentView(R.layout.loading_screen)
 
         val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
-        val auto_login = sharedPref.getBoolean("AUTO_LOGIN", false)
+        var auto_login = sharedPref.getBoolean("AUTO_LOGIN", false)
         requestHandler.initialize(this)
 
+        Log.d("loginactivity", auto_login.toString())
         if(auto_login)
         {
             val uname : String? = sharedPref.getString("USER_USERNAME", "")
@@ -62,12 +63,12 @@ class Login : AppCompatActivity() {
                 editor.apply()
             }
 
-
             loginButton.setOnClickListener {
                 requestHandler.requestLogin(username.text.toString(), password.text.toString(), this)
 
+                auto_login = rememberMe.isChecked
 
-                if(sharedPref.getBoolean("AUTO_LOGIN", true))
+                if(auto_login)
                 {
                     editor.putString("USER_USERNAME", username.text.toString())
                     editor.putString("USER_PASSWORD", requestHandler.md5(password.text.toString()))

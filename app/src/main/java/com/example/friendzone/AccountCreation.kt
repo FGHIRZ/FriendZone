@@ -50,7 +50,7 @@ class AccountCreation : AppCompatActivity() {
     {
 
         Toast.makeText(this, "Account has been created successfully, you will be auto-logged in", Toast.LENGTH_LONG).show()
-        // launch the map activity
+        // go back to login page (to be auto-logged)
         val intent = Intent(this, Login::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent)

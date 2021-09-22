@@ -12,8 +12,8 @@ class DeleteAccount : AppCompatActivity() {
 
     private val requestHandler : RequestHandler = RequestHandler()
 
-    private var PRIVATE_MODE = 0
-    private val PREF_NAME = "friendzone-app"
+    private var PRIVATEMODE = 0
+    private val PREFNAME = "friendzone-app"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,15 +21,15 @@ class DeleteAccount : AppCompatActivity() {
 
         requestHandler.initialize(this)
 
-        val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
-        val user_id = sharedPref.getInt("USER_ID", 0)
+        val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        val userId = sharedPref.getInt("USER_ID", 0)
         val username = sharedPref.getString("USER_USERNAME", "bug")
 
-        val delete_button : Button = findViewById(R.id.send_delete_accounnt_button)
+        val deleteButton : Button = findViewById(R.id.send_delete_accounnt_button)
         val password : EditText = findViewById(R.id.delete_account_password_edittext)
 
-        delete_button.setOnClickListener {
-            requestHandler.requestAccountDeletion(user_id, username!!,requestHandler.md5(password.text.toString()),this )
+        deleteButton.setOnClickListener {
+            requestHandler.requestAccountDeletion(userId, username!!,requestHandler.md5(password.text.toString()),this )
         }
     }
 
@@ -37,7 +37,7 @@ class DeleteAccount : AppCompatActivity() {
     {
         Toast.makeText(this, "Account has been deleted successfully, you will be redirected to login page", Toast.LENGTH_LONG).show()
 //        finish()
-        val pref = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val pref = getSharedPreferences(PREFNAME, PRIVATEMODE)
         val editor = pref.edit()
 //        preferences.edit().remove("AUTO_LOGIN")
 //        preferences.edit().remove("USER_ID")
@@ -50,7 +50,7 @@ class DeleteAccount : AppCompatActivity() {
 
         // go back to main activity
         val intent = Intent(this, Login::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
     }
 }

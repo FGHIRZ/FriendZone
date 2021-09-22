@@ -1,7 +1,6 @@
 package com.example.friendzone
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -10,12 +9,9 @@ import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.*
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.mapbox.android.core.permissions.PermissionsListener
-import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
@@ -38,8 +34,8 @@ class MainActivity : AppCompatActivity(){
     private val requestHandler = RequestHandler()
 
     private lateinit var symbolManager : SymbolManager
-    var mapView: MapView? = null
-    lateinit var mapboxMap: MapboxMap
+    private var mapView: MapView? = null
+    private lateinit var mapboxMap: MapboxMap
     
     private var users = mutableListOf<User>()
     private var events = mutableListOf<Event>()
@@ -52,12 +48,11 @@ class MainActivity : AppCompatActivity(){
     private var userIsVisible = true
     private var viewOthers = true
 
-    private var PRIVATE_MODE = 0
-    private val PREF_NAME = "friendzone-app"
+    private var PRIVATEMODE = 0
+    private val PREFNAME = "friendzone-app"
 
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
-            result: ActivityResult ->
         this.updateSettings()
     }
 
@@ -72,16 +67,16 @@ class MainActivity : AppCompatActivity(){
 
 
         //Lire les infos de l'utilisateur
-        val sharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
         client= User(sharedPreferences.getInt("USER_ID", 0))
         client.skin = sharedPreferences.getString("USER_SKIN", "default_skin")!!
         client.pseudo = sharedPreferences.getString("USER_PSEUDO", "none")!!
 
         //Initialisation de la mapbox & mise en page
         setContentView(R.layout.activity_map)
-        Mapbox.getInstance(this, getString(R.string.mapbox_access_token));
-        mapView = findViewById(R.id.mapView);
-        mapView?.onCreate(savedInstanceState);
+        Mapbox.getInstance(this, getString(R.string.mapbox_access_token))
+        mapView = findViewById(R.id.mapView)
+        mapView?.onCreate(savedInstanceState)
 
         //Chargement des paramètres de la map (Asynchrone)
         loadMap()
@@ -105,15 +100,15 @@ class MainActivity : AppCompatActivity(){
         settingsLauncher.launch(settingsIntent)
     }
 
-    fun updateSettings()
+    private fun updateSettings()
     {
-        val sharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
         userIsVisible = sharedPreferences.getBoolean("USER_VISIBILITY", true)
         viewOthers = sharedPreferences.getBoolean("VIEW_OTHERS", true)
 
         if(!viewOthers)
         {
-            delete_user_list()
+            deleteUserList()
         }
     }
 //=========================================================
@@ -140,13 +135,13 @@ class MainActivity : AppCompatActivity(){
         {
             //Check if user is already in list & update its position
 
-            val new_event : JSONObject = eventList[i] as JSONObject
+            val newEvent : JSONObject = eventList[i] as JSONObject
             var eventFound = false
             for (event in events)
             {
-                if(event.event_id==new_event.getInt("event_id"))
+                if(event.event_id==newEvent.getInt("event_id"))
                 {
-                    event.symbol!!.latLng = LatLng(new_event.getDouble("lat"), new_event.getDouble("lon"))
+                    event.symbol!!.latLng = LatLng(newEvent.getDouble("lat"), newEvent.getDouble("lon"))
                     eventFound = true
                     event.match = true
                 }
@@ -157,12 +152,12 @@ class MainActivity : AppCompatActivity(){
             {
                 val symbol = symbolManager.create(
                     SymbolOptions()
-                        .withLatLng(LatLng(new_event.getDouble("lat"), new_event.getDouble("lon")))
-                        .withIconImage(new_event.getString("type"))
+                        .withLatLng(LatLng(newEvent.getDouble("lat"), newEvent.getDouble("lon")))
+                        .withIconImage(newEvent.getString("type"))
                         .withIconSize( 1.2f))
 
-                val event = Event(new_event.getInt("event_id"))
-                event.type=new_event.getString("type")
+                val event = Event(newEvent.getInt("event_id"))
+                event.type=newEvent.getString("type")
                 event.symbol=symbol
                 event.match= true
                 events.add(event)
@@ -191,15 +186,15 @@ class MainActivity : AppCompatActivity(){
         {
             //Check if user is already in list & update its position
 
-            val new_user : JSONObject = userList[i] as JSONObject
+            val newUser : JSONObject = userList[i] as JSONObject
             var userFound = false
             for (user in users)
             {
-                if(user.user_id==new_user.getInt("user_id"))
+                if(user.user_id==newUser.getInt("user_id"))
                 {
-                    user.symbol!!.latLng = LatLng(new_user.getDouble("lat"), new_user.getDouble("lon"))
-                    user.skin=new_user.getString("skin")
-                    user.pseudo = new_user.getString("pseudo")
+                    user.symbol!!.latLng = LatLng(newUser.getDouble("lat"), newUser.getDouble("lon"))
+                    user.skin=newUser.getString("skin")
+                    user.pseudo = newUser.getString("pseudo")
                     user.symbol!!.iconImage=user.skin
                     userFound = true
                     user.match = true
@@ -211,17 +206,17 @@ class MainActivity : AppCompatActivity(){
             {
                 val symbol = symbolManager.create(
                     SymbolOptions()
-                        .withLatLng(LatLng(new_user.getDouble("lat"), new_user.getDouble("lon")))
-                        .withIconImage(new_user.getString("skin"))
+                        .withLatLng(LatLng(newUser.getDouble("lat"), newUser.getDouble("lon")))
+                        .withIconImage(newUser.getString("skin"))
                         .withIconSize( 1.0f)
                         .withIconOpacity(1.0f))
 
-                val user = User(new_user.getInt("user_id"))
+                val user = User(newUser.getInt("user_id"))
 
-                symbolManager.addClickListener { symbol ->
-                    displayUserMenu(user, symbol.latLng)
+                symbolManager.addClickListener {
+                    displayUserMenu(user)
                 }
-                user.pseudo = new_user.getString("pseudo")
+                user.pseudo = newUser.getString("pseudo")
                 user.symbol=symbol
                 user.match= true
                 users.add(user)
@@ -244,7 +239,7 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
-    private fun delete_user_list()
+    private fun deleteUserList()
     {
         for(user in users)
         {
@@ -253,10 +248,11 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
+    /*
     private fun createEvent(location : LatLng)
     {
         requestHandler.requestEventCreation(client.user_id, "event_test_icon", location, this)
-    }
+    }*/
 //=====================================================
 
 
@@ -264,7 +260,7 @@ class MainActivity : AppCompatActivity(){
 
 //========================  User Menus & Popups =============================
 
-    private fun displayUserMenu(user : User, location : LatLng) : Boolean
+    private fun displayUserMenu(user : User) : Boolean
     {
         val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         // Inflate a custom view using layout inflater
@@ -282,8 +278,8 @@ class MainActivity : AppCompatActivity(){
             1,
             0,0)
 
-        val pseudo_display = view.findViewById<TextView>(R.id.user_info_pseudo)
-        pseudo_display.text = user.pseudo
+        val pseudoDisplay = view.findViewById<TextView>(R.id.user_info_pseudo)
+        pseudoDisplay.text = user.pseudo
         val button= view.findViewById<Button>(R.id.user_info_quit)
         button.setOnClickListener {
             popupWindow.dismiss()
@@ -311,8 +307,8 @@ class MainActivity : AppCompatActivity(){
             1,
             0,0)
 
-        val pseudo_display = view.findViewById<TextView>(R.id.user_info_pseudo)
-        pseudo_display.text = client.pseudo
+        val pseudoDisplay = view.findViewById<TextView>(R.id.user_info_pseudo)
+        pseudoDisplay.text = client.pseudo
         val button= view.findViewById<Button>(R.id.user_info_quit)
         button.setOnClickListener {
             popupWindow.dismiss()
@@ -320,7 +316,7 @@ class MainActivity : AppCompatActivity(){
         return true
     }
 
-
+/*
     private fun showEventCreationWindow(location : LatLng): Boolean {
         val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
@@ -347,7 +343,7 @@ class MainActivity : AppCompatActivity(){
             1,
             0,0)
         return true
-    }
+    }*/
 
 //=====================================================
 

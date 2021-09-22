@@ -11,8 +11,8 @@ class ChangePassword : AppCompatActivity() {
 
     private val requestHandler : RequestHandler = RequestHandler()
 
-    private var PRIVATE_MODE = 0
-    private val PREF_NAME = "friendzone-app"
+    private var PRIVATEMODE = 0
+    private val PREFNAME = "friendzone-app"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,18 +20,18 @@ class ChangePassword : AppCompatActivity() {
         setContentView(R.layout.activity_change_password)
 
         requestHandler.initialize(this)
-        val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
-        val user_id = sharedPref.getInt("USER_ID", 0)
+        val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        val userId = sharedPref.getInt("USER_ID", 0)
         val username = sharedPref.getString("USER_USERNAME", "bug")
 
-        val new_password : EditText = findViewById(R.id.new_password_edittext)
-        val new_password_repeat : EditText = findViewById(R.id.repeat_new_password_edittext)
+        val newPassword : EditText = findViewById(R.id.new_password_edittext)
+        val newPasswordRepeat : EditText = findViewById(R.id.repeat_new_password_edittext)
         val password : EditText = findViewById(R.id.old_password_edittext)
         val button : Button = findViewById(R.id.send_new_password_button)
 
         button.setOnClickListener {
-            if(new_password.text.toString() == new_password_repeat.text.toString()) {
-                requestHandler.requestPasswordChange(user_id,username!!,requestHandler.md5(password.text.toString()),requestHandler.md5(new_password.text.toString()),this)
+            if(newPassword.text.toString() == newPasswordRepeat.text.toString()) {
+                requestHandler.requestPasswordChange(userId,username!!,requestHandler.md5(password.text.toString()),requestHandler.md5(newPassword.text.toString()),this)
             }else{
                 Toast.makeText(this, "Passwords aren't equal!", Toast.LENGTH_SHORT).show()
             }

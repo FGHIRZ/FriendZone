@@ -4,7 +4,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -12,8 +11,8 @@ import android.widget.Toast
 class AccountCreation : AppCompatActivity() {
 
     private val requestHandler : RequestHandler = RequestHandler()
-    private var PRIVATE_MODE = 0
-    private val PREF_NAME = "friendzone-app"
+    private var PRIVATEMODE = 0
+    private val PREFNAME = "friendzone-app"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +29,7 @@ class AccountCreation : AppCompatActivity() {
             {
                 requestHandler.requestAccountCreation(usernameBox.text.toString(),passwordBox.text.toString(), this)
 
-                val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+                val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
                 val editor = sharedPref.edit()
 
                 editor.putBoolean("AUTO_LOGIN", true)
@@ -52,7 +51,7 @@ class AccountCreation : AppCompatActivity() {
         Toast.makeText(this, "Account has been created successfully, you will be auto-logged in", Toast.LENGTH_LONG).show()
         // go back to login page (to be auto-logged)
         val intent = Intent(this, Login::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
     }
 }

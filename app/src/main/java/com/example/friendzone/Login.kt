@@ -3,7 +3,6 @@ package com.example.friendzone
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.*
@@ -31,8 +30,8 @@ class Login : AppCompatActivity(), PermissionsListener{
         }
     }
 
-    private var PRIVATE_MODE = 0
-    private val PREF_NAME = "friendzone-app"
+    private var PRIVATEMODE = 0
+    private val PREFNAME = "friendzone-app"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,23 +40,23 @@ class Login : AppCompatActivity(), PermissionsListener{
 
         requestHandler.initialize(this)
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
-            show_login_page()
+            showLoginPage()
         }
         else {
             permissionsManager = PermissionsManager(this)
             permissionsManager.listener = this
             permissionsManager.requestLocationPermissions(this)
-            Toast.makeText(this, "application can not work without location", Toast.LENGTH_LONG)
+            Toast.makeText(this, "application can not work without location", Toast.LENGTH_LONG).show()
         }
     }
 
-    private fun show_login_page()
+    private fun showLoginPage()
     {
-        val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
-        var auto_login = sharedPref.getBoolean("AUTO_LOGIN", false)
-        if(auto_login)
+        val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        var autoLogin = sharedPref.getBoolean("AUTO_LOGIN", false)
+        if(autoLogin)
         {
-            auto_login()
+            autoLogin()
         }
         else
         {
@@ -73,7 +72,7 @@ class Login : AppCompatActivity(), PermissionsListener{
 
             rememberMe.isChecked= sharedPref.getBoolean("AUTO_LOGIN", true)
 
-            rememberMe.setOnCheckedChangeListener { buttonView, isChecked ->
+            rememberMe.setOnCheckedChangeListener { _, isChecked ->
                 editor.putBoolean("AUTO_LOGIN", isChecked)
                 editor.apply()
             }
@@ -81,11 +80,11 @@ class Login : AppCompatActivity(), PermissionsListener{
             loginButton.setOnClickListener {
                 requestHandler.requestLogin(username.text.toString(), password.text.toString(), this)
 
-                auto_login = rememberMe.isChecked
+                autoLogin = rememberMe.isChecked
 
-                if(auto_login)
+                if(autoLogin)
                 {
-                    editor.putBoolean("AUTO_LOGIN", auto_login)
+                    editor.putBoolean("AUTO_LOGIN", autoLogin)
                     editor.putString("USER_USERNAME", username.text.toString())
                     editor.putString("USER_PASSWORD", requestHandler.md5(password.text.toString()))
                     editor.apply()
@@ -96,9 +95,9 @@ class Login : AppCompatActivity(), PermissionsListener{
             }
         }
     }
-    private fun auto_login()
+    private fun autoLogin()
     {
-        val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
 
         val uname : String? = sharedPref.getString("USER_USERNAME", "")
         val pass : String? = sharedPref.getString("USER_PASSWORD", "")
@@ -107,7 +106,7 @@ class Login : AppCompatActivity(), PermissionsListener{
 
     fun startMapActivity(user : User)
     {
-        val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
         val editor = sharedPref.edit()
 
         editor.putInt("USER_ID", user.user_id)
@@ -122,7 +121,7 @@ class Login : AppCompatActivity(), PermissionsListener{
 
     fun loginError()
     {
-        val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
         val editor = sharedPref.edit()
         editor.putBoolean("AUTO_LOGIN", false)
         editor.apply()
@@ -143,11 +142,10 @@ class Login : AppCompatActivity(), PermissionsListener{
     }
 
     override fun onExplanationNeeded(p0: MutableList<String>?) {
-        "YESYESYES"
     }
 
     override fun onPermissionResult(p0: Boolean) {
-        show_login_page()
+        showLoginPage()
     }
 
 

@@ -18,7 +18,7 @@ import java.security.MessageDigest
 class RequestHandler {
 
     private lateinit var queue: RequestQueue
-    private val server_url = "http://82.165.223.209:8080/"
+    private val serverUrl = "http://82.165.223.209:8080/"
 
 
     fun initialize(context: Context) {
@@ -28,27 +28,25 @@ class RequestHandler {
 
     fun requestLogin(username: String, password: String, activity : Activity) {
 
-        val user : User
-
-        val json_request = JSONObject()
-        val user_json = JSONObject()
-        user_json.put("name", username)
-        user_json.put("password", md5(password))
-        json_request.put("request", "login")
-        json_request.put("params", user_json)
+        val jsonRequest = JSONObject()
+        val userJson = JSONObject()
+        userJson.put("name", username)
+        userJson.put("password", md5(password))
+        jsonRequest.put("request", "login")
+        jsonRequest.put("params", userJson)
 
         val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.POST, server_url, json_request,
+            Request.Method.POST, serverUrl, jsonRequest,
             { response ->
                 Log.d("requestHandler", response.toString())
                 if((response.get("status") as String) == "ok") {
                     Toast.makeText(activity, "You have been rickrolled", Toast.LENGTH_LONG).show()
 
-                    val user_id = response.getJSONObject("params").getInt("user_id")
+                    val userId = response.getJSONObject("params").getInt("user_id")
                     val skin = response.getJSONObject("params").getString("skin")
                     val pseudo = response.getJSONObject("params").getString("pseudo")
 
-                    val user = User(user_id)
+                    val user = User(userId)
                     user.username = username
                     user.skin = skin
                     user.pseudo = pseudo
@@ -61,29 +59,25 @@ class RequestHandler {
                 }
             },
             { })
-        jsonObjectRequest.setRetryPolicy(
-            DefaultRetryPolicy(
-                4000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )
+        jsonObjectRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
         )
         queue.add(jsonObjectRequest)
     }
 
     fun requestAutoLogin(username: String, password: String, activity : Activity) {
 
-        val user : User
-
-        val json_request = JSONObject()
-        val user_json = JSONObject()
-        user_json.put("name", username)
-        user_json.put("password", password)
-        json_request.put("request", "login")
-        json_request.put("params", user_json)
+        val jsonRequest = JSONObject()
+        val userJson = JSONObject()
+        userJson.put("name", username)
+        userJson.put("password", password)
+        jsonRequest.put("request", "login")
+        jsonRequest.put("params", userJson)
 
         val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.POST, server_url, json_request,
+            Request.Method.POST, serverUrl, jsonRequest,
             { response ->
                 Log.d("requestHandler", response.toString())
                 if((response.get("status") as String) == "ok") {
@@ -101,12 +95,10 @@ class RequestHandler {
                 }
             },
             { })
-        jsonObjectRequest.setRetryPolicy(
-            DefaultRetryPolicy(
-                4000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-            )
+        jsonObjectRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
         )
         queue.add(jsonObjectRequest)
     }
@@ -120,7 +112,7 @@ class RequestHandler {
         json.put("request", "create_account")
         json.put("params", userJSON)
 
-        val createAccountRequest= JsonObjectRequest(Request.Method.POST, server_url, json, {response->
+        val createAccountRequest= JsonObjectRequest(Request.Method.POST, serverUrl, json, { response->
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
@@ -132,11 +124,10 @@ class RequestHandler {
             }
         }, {
         })
-        createAccountRequest.setRetryPolicy(
-            DefaultRetryPolicy(
-                4000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+        createAccountRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
 
         queue.add(createAccountRequest)
     }
@@ -159,7 +150,7 @@ class RequestHandler {
         json.put("params",userJSON)
 
         val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.POST, server_url, json,
+            Request.Method.POST, serverUrl, json,
             { response ->
                 Log.d("requestPage", response.toString())
                 val userList = response.getJSONObject("params").getJSONArray("user_list")
@@ -183,7 +174,7 @@ class RequestHandler {
         json.put("params",userJSON)
 
         val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.POST, server_url, json,
+            Request.Method.POST, serverUrl, json,
             { response ->
                 Log.d("requestPage", response.toString())
                 val eventList = response.getJSONObject("params").getJSONArray("event_list")
@@ -211,7 +202,7 @@ class RequestHandler {
 
         Log.d("request", requestJSON.toString())
 
-        val createEventRequest= JsonObjectRequest(Request.Method.POST, server_url, requestJSON, {response->
+        val createEventRequest= JsonObjectRequest(Request.Method.POST, serverUrl, requestJSON, { response->
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
@@ -223,79 +214,12 @@ class RequestHandler {
             }
         }, {
         })
-        createEventRequest.setRetryPolicy(
-            DefaultRetryPolicy(
-                4000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+        createEventRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
 
         queue.add(createEventRequest)
-    }
-
-    fun requestEventUpvote(username: String, password: String, activity: Activity)
-    {
-        val json = JSONObject()
-        val userJSON= JSONObject()
-        userJSON.put("name", username)
-        userJSON.put("password", md5(password))
-        json.put("request", "create_account")
-        json.put("params", userJSON)
-
-        val createAccountRequest= JsonObjectRequest(Request.Method.POST, server_url, json, {response->
-            Log.d("requestHandler", response.toString())
-            if(response.getString("status") == "ok")
-            {
-                (activity as AccountCreation).success()
-            }
-            else
-            {
-                Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
-            }
-        }, {
-        })
-        createAccountRequest.setRetryPolicy(
-            DefaultRetryPolicy(
-                4000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
-
-        queue.add(createAccountRequest)
-    }
-
-    fun requestEventDownvote(username: String, password: String, activity: Activity)
-    {
-        val json = JSONObject()
-        val userJSON= JSONObject()
-        userJSON.put("name", username)
-        userJSON.put("password", md5(password))
-        json.put("request", "create_account")
-        json.put("params", userJSON)
-
-        val createAccountRequest= JsonObjectRequest(Request.Method.POST, server_url, json, {response->
-            Log.d("requestHandler", response.toString())
-            if(response.getString("status") == "ok")
-            {
-                    //TODO à modifier
-                (activity as AccountCreation).success()
-            }
-            else
-            {
-                Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
-            }
-        }, {
-        })
-        createAccountRequest.setRetryPolicy(
-            DefaultRetryPolicy(
-                4000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
-
-        queue.add(createAccountRequest)
-    }
-
-    fun md5(input:String): String {
-        val md = MessageDigest.getInstance("MD5")
-        return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
     }
 
     fun requestUsernameChange(user_id: Int, new_username: String, password: String, activity: Activity) {
@@ -307,7 +231,7 @@ class RequestHandler {
         json.put("request", "change_username")
         json.put("params", userJSON)
 
-        val changeUsernameRequest = JsonObjectRequest(Request.Method.POST, server_url, json, {response->
+        val changeUsernameRequest = JsonObjectRequest(Request.Method.POST, serverUrl, json, { response->
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
@@ -319,11 +243,10 @@ class RequestHandler {
             }
         }, {
         })
-        changeUsernameRequest.setRetryPolicy(
-            DefaultRetryPolicy(
-                4000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+        changeUsernameRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
 
         queue.add(changeUsernameRequest)
     }
@@ -340,7 +263,7 @@ class RequestHandler {
         json.put("request", "change_password")
         json.put("params", userJSON)
 
-        val changePasswordRequest= JsonObjectRequest(Request.Method.POST, server_url, json, {response->
+        val changePasswordRequest= JsonObjectRequest(Request.Method.POST, serverUrl, json, { response->
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
@@ -352,14 +275,14 @@ class RequestHandler {
             }
         }, {
         })
-        changePasswordRequest.setRetryPolicy(
-            DefaultRetryPolicy(
-                4000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+        changePasswordRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
 
         queue.add(changePasswordRequest)
     }
+
     fun requestAccountDeletion(user_id: Int,username: String, password: String, activity: Activity) {
         val json = JSONObject()
         val userJSON= JSONObject()
@@ -369,7 +292,7 @@ class RequestHandler {
         json.put("request", "delete_account")
         json.put("params", userJSON)
 
-        val deleteAccountRequest = JsonObjectRequest(Request.Method.POST, server_url, json, {response->
+        val deleteAccountRequest = JsonObjectRequest(Request.Method.POST, serverUrl, json, { response->
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
@@ -381,17 +304,16 @@ class RequestHandler {
             }
         }, {
         })
-        deleteAccountRequest.setRetryPolicy(
-            DefaultRetryPolicy(
-                4000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+        deleteAccountRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
 
         queue.add(deleteAccountRequest)
     }
 
-    fun requestSkin( skin : String)
-    {
-        //TODO, récupère les IMAGES HD des skins pour les afficher dans le profile
+    fun md5(input:String): String {
+        val md = MessageDigest.getInstance("MD5")
+        return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
     }
 }

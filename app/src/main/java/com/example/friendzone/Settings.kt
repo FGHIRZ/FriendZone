@@ -1,7 +1,6 @@
 package com.example.friendzone
 
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Switch
@@ -9,42 +8,42 @@ import androidx.appcompat.app.AppCompatActivity
 
 class Settings : AppCompatActivity() {
 
-    private var PRIVATE_MODE = 0
-    private val PREF_NAME = "friendzone-app"
+    private var PRIVATEMODE = 0
+    private val PREFNAME = "friendzone-app"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
-        val pref = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val pref = getSharedPreferences(PREFNAME, PRIVATEMODE)
         val editor = pref.edit()
 
-        val visibility_switch : Switch = findViewById(R.id.visibility_switch)
-        val view_others_switch : Switch = findViewById(R.id.view_others_switch)
-        val account_management_button : Button = findViewById(R.id.account_management_button)
-        val logout_button : Button = findViewById(R.id.logout_button)
+        val visibilitySwitch : Switch = findViewById(R.id.visibility_switch)
+        val viewOthersSwitch : Switch = findViewById(R.id.view_others_switch)
+        val accountManagementButton : Button = findViewById(R.id.account_management_button)
+        val logoutButton : Button = findViewById(R.id.logout_button)
 
-        val user_visibile = pref.getBoolean("USER_VISIBILITY", true)
-        visibility_switch.isChecked=user_visibile
-        val view_others = pref.getBoolean("VIEW_OTHERS", true)
-        view_others_switch.isChecked=view_others
+        val userVisibile = pref.getBoolean("USER_VISIBILITY", true)
+        visibilitySwitch.isChecked=userVisibile
+        val viewOthers = pref.getBoolean("VIEW_OTHERS", true)
+        viewOthersSwitch.isChecked=viewOthers
 
-        visibility_switch.setOnCheckedChangeListener { _, isChecked ->
+        visibilitySwitch.setOnCheckedChangeListener { _, isChecked ->
             editor.putBoolean("USER_VISIBILITY", isChecked)
             editor.apply()
         }
 
-        view_others_switch.setOnCheckedChangeListener { _, isChecked ->
+        viewOthersSwitch.setOnCheckedChangeListener { _, isChecked ->
             editor.putBoolean("VIEW_OTHERS", isChecked)
             editor.apply()
         }
 
-        account_management_button.setOnClickListener {
+        accountManagementButton.setOnClickListener {
             openAccountManagement()
         }
 
 
-        logout_button.setOnClickListener {
+        logoutButton.setOnClickListener {
             logout()
         }
     }
@@ -57,14 +56,14 @@ class Settings : AppCompatActivity() {
 
     private fun logout()
     {
-        val pref = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val pref = getSharedPreferences(PREFNAME, PRIVATEMODE)
         val editor = pref.edit()
 
         editor.putBoolean("AUTO_LOGIN", false)
         editor.apply()
 
         val intent = Intent(this, Login::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
     }
 }

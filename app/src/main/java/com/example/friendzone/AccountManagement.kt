@@ -7,8 +7,6 @@ import android.widget.Button
 
 class AccountManagement : AppCompatActivity() {
 
-    private val requestHandler : RequestHandler = RequestHandler()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_account_management)

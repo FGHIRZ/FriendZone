@@ -30,8 +30,7 @@ import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import org.json.JSONArray
 import org.json.JSONObject
 
-class MainActivity : AppCompatActivity(), PermissionsListener {
-
+class MainActivity : AppCompatActivity(){
 
 
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
@@ -42,7 +41,6 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
 
     private lateinit var textview : TextView
     private val requestHandler = RequestHandler()
-    var permissionsManager: PermissionsManager = PermissionsManager(this)
 
     private lateinit var symbolManager : SymbolManager
     var mapView: MapView? = null
@@ -99,28 +97,29 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         settingsLauncher.launch(settingsIntent)
     }
 
-    private fun loadMap()
-    {
-        mapView?.getMapAsync { mapboxMap ->
+    private fun loadMap() {
 
-            mapboxMap.setStyle(Style.Builder().fromUri(resources.getString(R.string.mapbox_style_url))) {
-                this.mapboxMap = mapboxMap
-                this.mapStyle = it
-                mapboxMap.setMinZoomPreference(2.00)
+            mapView?.getMapAsync { mapboxMap ->
 
-                symbolManager = SymbolManager(mapView!!, mapboxMap, it)
-                symbolManager.iconAllowOverlap = true
-                symbolManager.iconIgnorePlacement = true
+                mapboxMap.setStyle(Style.Builder().fromUri(resources.getString(R.string.mapbox_style_url))) {
+                    this.mapboxMap = mapboxMap
+                    this.mapStyle = it
+                    mapboxMap.setMinZoomPreference(2.00)
 
-                //loadSkins(mapboxMap)
-                enableLocationComponent(it)
-                updateLoop()
+                    symbolManager = SymbolManager(mapView!!, mapboxMap, it)
+                    symbolManager.iconAllowOverlap = true
+                    symbolManager.iconIgnorePlacement = true
 
-                mapboxMap.addOnMapLongClickListener {
-                    showEventCreationWindow(it)
+                    //loadSkins(mapboxMap)
+
+                    enableLocationComponent(it)
+                    updateLoop()
+
+                    mapboxMap.addOnMapLongClickListener {
+                        showEventCreationWindow(it)
+                    }
                 }
             }
-        }
     }
 
     fun updateSettings()
@@ -326,23 +325,8 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
 
     }
 
-    override fun onExplanationNeeded(permissionsToExplain: List<String>) {
-        Toast.makeText(this, R.string.user_location_permission_explanation, Toast.LENGTH_LONG).show()
-    }
-
-    override fun onPermissionResult(granted: Boolean) {
-        if (granted) {
-        } else {
-            Toast.makeText(this, R.string.user_location_permission_not_granted, Toast.LENGTH_LONG).show()
-        }
-    }
-
     @SuppressLint("MissingPermission", "ResourceAsColor")
     private fun enableLocationComponent(loadedMapStyle: Style) {
-
-// Check if permissions are enabled and if not request
-        if (PermissionsManager.areLocationPermissionsGranted(this)) {
-
 
 // Create and customize the LocationComponent's options
             val customLocationComponentOptions = LocationComponentOptions.builder(this)
@@ -383,11 +367,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
             mapboxMap.locationComponent.addOnLocationLongClickListener {
                 displayMyMenu()
             }
-        } else {
-            permissionsManager = PermissionsManager(this)
-            permissionsManager.requestLocationPermissions(this)
         }
-    }
 
     private fun showEventCreationWindow(location : LatLng): Boolean {
     val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater

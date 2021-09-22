@@ -9,11 +9,15 @@ import android.widget.*
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.mapbox.android.core.permissions.PermissionsListener
+import com.mapbox.android.core.permissions.PermissionsManager
 import org.json.JSONObject
 
 
-class Login : AppCompatActivity() {
+class Login : AppCompatActivity(), PermissionsListener {
 
+
+    var permissionsManager: PermissionsManager = PermissionsManager(this)
 
     private val requestHandler :RequestHandler = RequestHandler()
     private var getCreateACcount = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
@@ -32,18 +36,25 @@ class Login : AppCompatActivity() {
 
         setContentView(R.layout.loading_screen)
 
+        requestHandler.initialize(this)
+        if (PermissionsManager.areLocationPermissionsGranted(this)) {
+            show_login_page()
+        }
+        else {
+            permissionsManager = PermissionsManager(this)
+            permissionsManager.requestLocationPermissions(this)
+            Toast.makeText(this, "application can not work without location", Toast.LENGTH_LONG)
+        }
+    }
+
+    private fun show_login_page()
+    {
         val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
         var auto_login = sharedPref.getBoolean("AUTO_LOGIN", false)
-        requestHandler.initialize(this)
-
-        Log.d("loginactivity", auto_login.toString())
         if(auto_login)
         {
-            val uname : String? = sharedPref.getString("USER_USERNAME", "")
-            val pass : String? = sharedPref.getString("USER_PASSWORD", "")
-            requestHandler.requestAutoLogin(uname!!, pass!!, this)
+            auto_login()
         }
-
         else
         {
             setContentView(R.layout.activity_login)
@@ -76,14 +87,18 @@ class Login : AppCompatActivity() {
                     editor.apply()
                 }
             }
-
             createAccount.setOnClickListener {
                 showCreateAccountPage()
             }
         }
+    }
+    private fun auto_login()
+    {
+        val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
 
-
-
+        val uname : String? = sharedPref.getString("USER_USERNAME", "")
+        val pass : String? = sharedPref.getString("USER_PASSWORD", "")
+        requestHandler.requestAutoLogin(uname!!, pass!!, this)
     }
 
     fun startMapActivity(user : User)
@@ -118,5 +133,16 @@ class Login : AppCompatActivity() {
     private fun showCreateAccountPage() {
         val intent = Intent(this, AccountCreation::class.java)
         getCreateACcount.launch(intent)
+    }
+
+    override fun onExplanationNeeded(p0: MutableList<String>?) {
+        "can you give me ?"
+    }
+
+    override fun onPermissionResult(p0: Boolean) {
+        if(p0)
+        {
+            show_login_page()
+        }
     }
 }

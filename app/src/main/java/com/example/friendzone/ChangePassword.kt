@@ -38,4 +38,9 @@ class ChangePassword : AppCompatActivity() {
 
         }
     }
+    fun success()
+    {
+        Toast.makeText(this, "Password has been changed successfully", Toast.LENGTH_LONG).show()
+        finish()
+    }
 }

@@ -45,7 +45,7 @@ class Settings : AppCompatActivity() {
 
 
         logout_button.setOnClickListener {
-            logout(pref, editor)
+            logout()
         }
     }
 
@@ -55,15 +55,16 @@ class Settings : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun logout(pref : SharedPreferences, editor : SharedPreferences.Editor)
+    private fun logout()
     {
+        val pref = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val editor = pref.edit()
+
         editor.putBoolean("AUTO_LOGIN", false)
         editor.apply()
 
-        val returnIntent = Intent()
-        returnIntent.putExtra("LOGOUT", true)
-        setResult(RESULT_OK, returnIntent)
-
-        finish()
+        val intent = Intent(this, Login::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent)
     }
 }

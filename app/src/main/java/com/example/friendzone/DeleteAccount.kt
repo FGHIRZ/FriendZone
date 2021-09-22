@@ -37,15 +37,16 @@ class DeleteAccount : AppCompatActivity() {
     {
         Toast.makeText(this, "Account has been deleted successfully, you will be redirected to login page", Toast.LENGTH_LONG).show()
 //        finish()
-        val preferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val pref = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val editor = pref.edit()
 //        preferences.edit().remove("AUTO_LOGIN")
 //        preferences.edit().remove("USER_ID")
 //        preferences.edit().remove("USER_USERNAME")
 //        preferences.edit().remove("USER_PASSWORD")
         // ou
-        preferences.edit().clear()
-        preferences.edit().putBoolean("AUTO_LOGIN", false)
-
+        editor.clear()
+        editor.putBoolean("AUTO_LOGIN", false)
+        editor.apply()
 
         // go back to main activity
         val intent = Intent(this, Login::class.java)

@@ -37,20 +37,6 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
         result: ActivityResult ->
-            Log.d("YOLO", "C BIZAR")
-            if(result.resultCode==Activity.RESULT_OK)
-            {
-                    Log.d("TYOLO", result.data.toString())
-                    if(result.data != null)
-                    {
-                        if(result.data!!.getBooleanExtra("LOGOUT", false))
-                        {
-                            val intent = Intent(this, Login::class.java)
-                            startActivity(intent)
-                            finish()
-                        }
-                    }
-            }
         this.updateSettings()
     }
 

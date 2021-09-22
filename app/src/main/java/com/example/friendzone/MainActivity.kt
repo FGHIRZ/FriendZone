@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity(){
     private lateinit var symbolManager : SymbolManager
     private var mapView: MapView? = null
     private lateinit var mapboxMap: MapboxMap
-    
+
     private var users = mutableListOf<User>()
     private var events = mutableListOf<Event>()
 
@@ -169,6 +169,7 @@ class MainActivity : AppCompatActivity(){
             if(!event.match)
             {
                 symbolManager.delete(event.symbol)
+                @Suppress("TYPE_INFERENCE_ONLY_INPUT_TYPES_WARNING")
                 users.remove(event)
             }
             else

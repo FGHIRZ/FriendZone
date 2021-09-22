@@ -1,11 +1,11 @@
 package com.example.friendzone
 
 import android.content.SharedPreferences
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 
 class DeleteAccount : AppCompatActivity() {
 
@@ -36,5 +36,15 @@ class DeleteAccount : AppCompatActivity() {
     {
         Toast.makeText(this, "Account has been deleted successfully, you will be redirected to login page", Toast.LENGTH_LONG).show()
         finish()
+        val preferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        preferences.edit().remove("AUTO_LOGIN")
+        preferences.edit().remove("USER_ID")
+        preferences.edit().remove("USER_USERNAME")
+        preferences.edit().remove("USER_PASSWORD")
+        // ou
+        //preferences.edit().clear()
+
+        // go back to main activity
+        setContentView(R.layout.activity_main)
     }
 }

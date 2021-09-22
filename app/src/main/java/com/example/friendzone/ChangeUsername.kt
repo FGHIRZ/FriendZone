@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 
 class ChangeUsername : AppCompatActivity() {
 
@@ -30,5 +31,10 @@ class ChangeUsername : AppCompatActivity() {
             requestHandler.requestUsernameChange(user_id,username.text.toString(),requestHandler.md5(password.text.toString()),this)
         }
 
+    }
+    fun success()
+    {
+        Toast.makeText(this, "Username has been changed successfully", Toast.LENGTH_LONG).show()
+        finish()
     }
 }

@@ -42,7 +42,8 @@ class RequestHandler {
             { response ->
                 Log.d("requestHandler", response.toString())
                 if((response.get("status") as String) == "ok") {
-                    Toast.makeText(activity, response.get("status") as String, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
+
                     val user_id = response.getJSONObject("params").getInt("user_id")
                     val skin = response.getJSONObject("params").getString("skin")
                     val pseudo = response.getJSONObject("params").getString("pseudo")
@@ -86,7 +87,7 @@ class RequestHandler {
             { response ->
                 Log.d("requestHandler", response.toString())
                 if((response.get("status") as String) == "ok") {
-                    Toast.makeText(activity, response.get("status") as String, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
 
                     val user = User(response.getJSONObject("params").getInt("user_id"))
                     user.skin = response.getJSONObject("params").getString("skin")
@@ -273,6 +274,7 @@ class RequestHandler {
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
+                    //TODO à modifier
                 (activity as AccountCreation).success()
             }
             else
@@ -308,7 +310,7 @@ class RequestHandler {
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
-                (activity as AccountCreation).success()
+                (activity as ChangeUsername).success()
             }
             else
             {
@@ -341,7 +343,7 @@ class RequestHandler {
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
-                (activity as AccountCreation).success()
+                (activity as ChangePassword).success()
             }
             else
             {

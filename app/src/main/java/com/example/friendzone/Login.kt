@@ -46,7 +46,6 @@ class Login : AppCompatActivity(), PermissionsListener{
             permissionsManager = PermissionsManager(this)
             permissionsManager.listener = this
             permissionsManager.requestLocationPermissions(this)
-            Toast.makeText(this, "application can not work without location", Toast.LENGTH_LONG).show()
         }
     }
 

@@ -144,7 +144,15 @@ class Login : AppCompatActivity(), PermissionsListener{
     }
 
     override fun onPermissionResult(p0: Boolean) {
-        showLoginPage()
+        if(p0)
+        {
+            showLoginPage()
+        }
+        else
+        {
+            Toast.makeText(this, "application can not work without location", Toast.LENGTH_LONG).show()
+            finish()
+        }
     }
 
 

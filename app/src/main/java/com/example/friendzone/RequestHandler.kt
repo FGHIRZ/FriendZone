@@ -30,7 +30,7 @@ class RequestHandler {
 
         val jsonRequest = JSONObject()
         val userJson = JSONObject()
-        userJson.put("name", username)
+        userJson.put("username", username)
         userJson.put("password", md5(password))
         jsonRequest.put("request", "login")
         jsonRequest.put("params", userJson)
@@ -71,7 +71,7 @@ class RequestHandler {
 
         val jsonRequest = JSONObject()
         val userJson = JSONObject()
-        userJson.put("name", username)
+        userJson.put("username", username)
         userJson.put("password", password)
         jsonRequest.put("request", "login")
         jsonRequest.put("params", userJson)
@@ -107,7 +107,7 @@ class RequestHandler {
     {
         val json = JSONObject()
         val userJSON= JSONObject()
-        userJSON.put("name", username)
+        userJSON.put("username", username)
         userJSON.put("password", md5(password))
         json.put("request", "create_account")
         json.put("params", userJSON)
@@ -226,7 +226,7 @@ class RequestHandler {
         val json = JSONObject()
         val userJSON= JSONObject()
         userJSON.put("user_id", user_id)
-        userJSON.put("new_name", new_username)
+        userJSON.put("new_username", new_username)
         userJSON.put("password", password)
         json.put("request", "change_username")
         json.put("params", userJSON)

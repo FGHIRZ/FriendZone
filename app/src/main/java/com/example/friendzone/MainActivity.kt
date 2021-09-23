@@ -73,8 +73,8 @@ class MainActivity : AppCompatActivity(){
         client.pseudo = sharedPreferences.getString("USER_PSEUDO", "none")!!
 
         //Initialisation de la mapbox & mise en page
-        setContentView(R.layout.activity_map)
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token))
+        setContentView(R.layout.activity_map)
         mapView = findViewById(R.id.mapView)
         mapView?.onCreate(savedInstanceState)
 

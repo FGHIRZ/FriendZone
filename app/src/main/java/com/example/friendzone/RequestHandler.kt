@@ -2,6 +2,7 @@ package com.example.friendzone
 
 import android.app.Activity
 import android.content.Context
+import android.content.SharedPreferences
 import android.location.Location
 import android.util.Log
 import android.widget.Toast
@@ -19,7 +20,6 @@ class RequestHandler {
 
     private lateinit var queue: RequestQueue
     private val serverUrl = "http://82.165.223.209:8080/"
-
 
     fun initialize(context: Context) {
         queue = Volley.newRequestQueue(context)
@@ -222,6 +222,7 @@ class RequestHandler {
         queue.add(createEventRequest)
     }
 
+
     fun requestUsernameChange(user_id: Int, new_username: String, password: String, activity: Activity) {
         val json = JSONObject()
         val userJSON= JSONObject()
@@ -235,7 +236,7 @@ class RequestHandler {
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
-                (activity as ChangeUsername).success()
+                (activity as ChangeUsername).success(new_username)
             }
             else
             {

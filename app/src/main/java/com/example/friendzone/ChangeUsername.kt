@@ -32,8 +32,14 @@ class ChangeUsername : AppCompatActivity() {
         }
 
     }
-    fun success()
+    fun success(new_username: String)
     {
+        // actualise the pref value of username
+        val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        val editor = sharedPref.edit()
+
+        editor.putString("USER_USERNAME", new_username)
+
         Toast.makeText(this, "Username has been changed successfully", Toast.LENGTH_LONG).show()
         finish()
     }

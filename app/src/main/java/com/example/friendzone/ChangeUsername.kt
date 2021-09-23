@@ -39,6 +39,7 @@ class ChangeUsername : AppCompatActivity() {
         val editor = sharedPref.edit()
 
         editor.putString("USER_USERNAME", new_username)
+        editor.apply()
 
         Toast.makeText(this, "Username has been changed successfully", Toast.LENGTH_LONG).show()
         finish()

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
@@ -15,6 +16,7 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
@@ -25,6 +27,7 @@ import com.mapbox.mapboxsdk.maps.Image
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.plugins.annotation.Symbol
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import org.json.JSONArray
@@ -33,7 +36,6 @@ import java.net.URL
 
 
 class MainActivity : AppCompatActivity(){
-
 
 
 
@@ -74,9 +76,6 @@ class MainActivity : AppCompatActivity(){
 
         //Initialisation handler
         requestHandler.initialize(this)
-        requestHandler.requestSkinList(this)
-
-
 
         //Lire les infos de l'utilisateur
         val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
@@ -84,6 +83,7 @@ class MainActivity : AppCompatActivity(){
         client.skin = sharedPreferences.getString("USER_SKIN", "default_skin")!!
         client.pseudo = sharedPreferences.getString("USER_PSEUDO", "none")!!
 
+        Log.d("YOLO", client.skin + ", " + client.pseudo)
         //Initialisation de la mapbox & mise en page
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token))
         setContentView(R.layout.activity_map)
@@ -226,9 +226,6 @@ class MainActivity : AppCompatActivity(){
 
                 val user = User(newUser.getInt("user_id"))
 
-                symbolManager.addClickListener {
-                    displayUserMenu(user)
-                }
                 user.pseudo = newUser.getString("pseudo")
                 user.symbol=symbol
                 user.match= true
@@ -273,34 +270,55 @@ class MainActivity : AppCompatActivity(){
 
 //========================  User Menus & Popups =============================
 
-    private fun displayUserMenu(user : User) : Boolean
+    private fun displayUserMenu(symbol : Symbol) : Boolean
     {
-        val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        // Inflate a custom view using layout inflater
-        val view = inflater.inflate(R.layout.user_info,mapView,false)
-
-        skin_preview_imageview=view.findViewById(R.id.skin_preview_imageview)
-        // Initialize a new instance of popup window
-        val popupWindow = PopupWindow(
-            view, // Custom view to show in popup window
-            LinearLayout.LayoutParams.MATCH_PARENT, // Width of popup window
-            LinearLayout.LayoutParams.WRAP_CONTENT// Window height
-        )
-
-        popupWindow.showAtLocation(mapView
-            ,
-            1,
-            0,0)
-
-        val pseudoDisplay = view.findViewById<TextView>(R.id.user_info_pseudo)
-        pseudoDisplay.text = user.pseudo
-        val button= view.findViewById<Button>(R.id.user_info_quit)
-        button.setOnClickListener {
-            popupWindow.dismiss()
+        if(symbol == client.symbol)
+        {
+            displayMyMenu()
         }
+        else {
+            var user = User(0)
+            for (u in users)
+            {
+                if(symbol == u.symbol)
+                {
+                    user = u
+                }
+            }
+            val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+            // Inflate a custom view using layout inflater
+            val view = inflater.inflate(R.layout.user_info, mapView, false)
 
-        skin_preview_imageview!!.setImageBitmap(skin_image_list[user.skin])
+            skin_preview_imageview = view.findViewById(R.id.skin_preview_imageview)
 
+            val skinUrl = requestHandler.serverUrl + "skins/" + user.skin + ".png"
+            Glide.with(this)
+                .load(skinUrl)
+                .into(skin_preview_imageview!!)
+
+            // Initialize a new instance of popup window
+            val popupWindow = PopupWindow(
+                view, // Custom view to show in popup window
+                LinearLayout.LayoutParams.MATCH_PARENT, // Width of popup window
+                LinearLayout.LayoutParams.WRAP_CONTENT// Window height
+            )
+
+            popupWindow.showAtLocation(
+                mapView,
+                1,
+                0, 0
+            )
+
+            val pseudoDisplay = view.findViewById<TextView>(R.id.user_info_pseudo)
+            pseudoDisplay.text = user.pseudo
+            val button = view.findViewById<Button>(R.id.user_info_quit)
+            button.setOnClickListener {
+                popupWindow.dismiss()
+            }
+
+            skin_preview_imageview!!.setImageBitmap(skin_image_list[user.skin])
+
+        }
         return true
     }
 
@@ -329,53 +347,18 @@ class MainActivity : AppCompatActivity(){
         val button= view.findViewById<Button>(R.id.user_info_quit)
         skin_preview_imageview = view.findViewById<ImageView>(R.id.skin_preview_imageview)
 
+        val skinUrl = requestHandler.serverUrl + "skins/" + client.skin + ".png"
+        Glide.with(this)
+            .load(skinUrl)
+            .into(skin_preview_imageview!!)
+
         skin_preview_imageview!!.setImageBitmap(skin_image_list[client.skin])
         button.setOnClickListener {
             popupWindow.dismiss()
         }
-
-
         return true
     }
 
-    fun initiateLoadingSkins(skinList: JSONArray)
-    {
-        Log.d("YOLO", "initializing")
-        loadSkins(skinList).execute()
-    }
-    private inner class loadSkins(val skinList : JSONArray) : AsyncTask<String, Void, Boolean>() {
-        init {
-            Log.d("YOLO", "starting thread")
-            Toast.makeText(applicationContext, "Please wait, it may take a few minute...",     Toast.LENGTH_SHORT).show()
-        }
-
-        override fun doInBackground(vararg urls: String) : Boolean {
-
-
-            Log.d("YOLO", "Doing ...")
-            for(i in 0 until skinList.length())
-            {
-                val imageURL = "http://82.165.223.209:8080/skins/" + skinList[i] as String + ".png"
-                var image: Bitmap? = null
-                try {
-                    val `in` = URL(imageURL).openStream()
-                    image = BitmapFactory.decodeStream(`in`)
-                    skin_image_list.put(skinList[i] as String, image)
-                    Log.d("YOLO", "loaded an image")
-                }
-                catch (e: Exception) {
-                    Log.e("Error Message", e.message.toString())
-                    e.printStackTrace()
-                }
-            }
-            return true
-        }
-
-        override fun onPostExecute(result: Boolean) {
-            Log.d("test", "tout s'est bien passé")
-            Log.d("test", skin_image_list.toString())
-        }
-    }
 
 /*
     private fun showEventCreationWindow(location : LatLng): Boolean {
@@ -423,12 +406,27 @@ class MainActivity : AppCompatActivity(){
                 this.mapStyle = it
                 mapboxMap.setMinZoomPreference(2.00)
 
+
+                enableLocationComponent(it)
+
                 symbolManager = SymbolManager(mapView!!, mapboxMap, it)
                 symbolManager.iconAllowOverlap = true
                 symbolManager.iconIgnorePlacement = true
 
+                val symbol = symbolManager.create(
+                    SymbolOptions()
+                        .withLatLng(LatLng(mapboxMap.locationComponent.lastKnownLocation!!.latitude, mapboxMap.locationComponent.lastKnownLocation!!.longitude))
+                        .withIconImage("plane")
+                        .withIconSize( 1.2f)
+                        .withIconOpacity(1.0f))
+
+                client.symbol = symbol
+
+                symbolManager.addClickListener {
+                    displayUserMenu(it)
+                }
                 //Activer le tracking de l'utilisateur et la balise de localisation
-                enableLocationComponent(it)
+
 
                 //Commencer la boucle de contrôle principale
                 updateLoop()
@@ -441,19 +439,15 @@ class MainActivity : AppCompatActivity(){
     @SuppressLint("MissingPermission", "ResourceAsColor")
     private fun enableLocationComponent(loadedMapStyle: Style) {
 
+
 // Create and customize the LocationComponent's options
         val customLocationComponentOptions = LocationComponentOptions.builder(this)
             .trackingGesturesManagement(true)
             .accuracyColor(ContextCompat.getColor(this, R.color.light_blue_600))
-            .minZoomIconScale(1.0f)
             .bearingTintColor(R.color.black)
             .pulseEnabled(true)
-            .backgroundDrawable(R.drawable.ic_shadow)
-            .backgroundDrawableStale(R.drawable.ic_shadow)
-            .foregroundDrawableStale(R.drawable.ic_skin_sourismorte)
-            .foregroundDrawable(R.drawable.ic_skin_sourismorte)
-            .minZoomIconScale(1.2f)
-            .maxZoomIconScale(1.7f)
+            .minZoomIconScale(0.0f)
+            .maxZoomIconScale(0.0f)
             .build()
 
         val locationComponentActivationOptions = LocationComponentActivationOptions.builder(this, loadedMapStyle)
@@ -476,9 +470,15 @@ class MainActivity : AppCompatActivity(){
             renderMode = RenderMode.NORMAL
 
 
+
+
         }
-        mapboxMap.locationComponent.addOnLocationLongClickListener {
-            displayMyMenu()
+        mapboxMap.locationComponent.addOnLocationStaleListener {
+            val location = mapboxMap.locationComponent.lastKnownLocation
+            if(client.symbol!= null)
+            {
+                client.symbol!!.latLng = LatLng(location!!.latitude, location!!.longitude)
+            }
         }
     }
 

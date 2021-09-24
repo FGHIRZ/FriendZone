@@ -21,7 +21,7 @@ import java.security.MessageDigest
 class RequestHandler {
 
     private lateinit var queue: RequestQueue
-    private val serverUrl = "http://82.165.223.209:8080/"
+    val serverUrl = "http://82.165.223.209:8080/"
 
     fun initialize(context: Context) {
         queue = Volley.newRequestQueue(context)
@@ -323,7 +323,7 @@ class RequestHandler {
             { response ->
                 val skinList=JSONObject(response)
                 Log.d("YOLO", "response : " + response.toString())
-                (activity as MainActivity).initiateLoadingSkins(skinList.getJSONArray("file_list"))
+                (activity as CacheActivity).loadSkinImages(skinList)
             },
             {  })
 // Add the request to the RequestQueue.

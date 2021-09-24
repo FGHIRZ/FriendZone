@@ -416,7 +416,7 @@ class MainActivity : AppCompatActivity(){
                 val symbol = symbolManager.create(
                     SymbolOptions()
                         .withLatLng(LatLng(mapboxMap.locationComponent.lastKnownLocation!!.latitude, mapboxMap.locationComponent.lastKnownLocation!!.longitude))
-                        .withIconImage("plane")
+                        .withIconImage(client.skin)
                         .withIconSize( 1.2f)
                         .withIconOpacity(1.0f))
 

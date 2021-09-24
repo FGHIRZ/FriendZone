@@ -2,11 +2,13 @@ package com.example.friendzone
 
 import android.content.Intent
 import android.graphics.Bitmap
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import org.json.JSONArray
+import com.bumptech.glide.request.target.CustomTarget
 import org.json.JSONObject
+
 
 class CacheActivity : AppCompatActivity() {
     private var PRIVATEMODE = 0
@@ -35,6 +37,7 @@ class CacheActivity : AppCompatActivity() {
             Glide.with(this)
                 .load(url)
         }
+
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
         finish()

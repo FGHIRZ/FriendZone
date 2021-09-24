@@ -4,9 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.drawable.Drawable
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -23,7 +20,6 @@ import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.LocationComponentOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
-import com.mapbox.mapboxsdk.maps.Image
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
@@ -413,6 +409,7 @@ class MainActivity : AppCompatActivity(){
                 symbolManager.iconAllowOverlap = true
                 symbolManager.iconIgnorePlacement = true
 
+                Log.d("yolo", client.skin)
                 val symbol = symbolManager.create(
                     SymbolOptions()
                         .withLatLng(LatLng(mapboxMap.locationComponent.lastKnownLocation!!.latitude, mapboxMap.locationComponent.lastKnownLocation!!.longitude))
@@ -477,7 +474,7 @@ class MainActivity : AppCompatActivity(){
             val location = mapboxMap.locationComponent.lastKnownLocation
             if(client.symbol!= null)
             {
-                client.symbol!!.latLng = LatLng(location!!.latitude, location!!.longitude)
+                client.symbol!!.latLng = LatLng(location!!.latitude, location.longitude)
             }
         }
     }

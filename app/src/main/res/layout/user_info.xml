@@ -32,9 +32,9 @@
         />
 
         <ImageView
+                android:id="@+id/skin_preview_imageview"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:src="@drawable/ic_skin_sourismorte"
                 android:layout_gravity="center"
                 android:layout_margin="10dp"/>
 

@@ -3,6 +3,9 @@ package com.example.friendzone
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -25,6 +28,8 @@ import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import org.json.JSONArray
 import org.json.JSONObject
+import java.net.URL
+
 
 class MainActivity : AppCompatActivity(){
 
@@ -50,6 +55,8 @@ class MainActivity : AppCompatActivity(){
 
     private var PRIVATEMODE = 0
     private val PREFNAME = "friendzone-app"
+
+    var skin_preview_imageview : ImageView? = null
 
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
@@ -267,6 +274,7 @@ class MainActivity : AppCompatActivity(){
         // Inflate a custom view using layout inflater
         val view = inflater.inflate(R.layout.user_info,mapView,false)
 
+        skin_preview_imageview=view.findViewById(R.id.skin_preview_imageview)
         // Initialize a new instance of popup window
         val popupWindow = PopupWindow(
             view, // Custom view to show in popup window
@@ -286,8 +294,9 @@ class MainActivity : AppCompatActivity(){
             popupWindow.dismiss()
         }
 
-        return true
+        getSkin(user.skin).execute()
 
+        return true
     }
 
     private fun displayMyMenu() : Boolean
@@ -295,6 +304,8 @@ class MainActivity : AppCompatActivity(){
         val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         // Inflate a custom view using layout inflater
         val view = inflater.inflate(R.layout.custom_menu,mapView,false)
+
+        skin_preview_imageview = view.findViewById<ImageView>(R.id.skin_preview_imageview)
 
         // Initialize a new instance of popup window
         val popupWindow = PopupWindow(
@@ -311,10 +322,40 @@ class MainActivity : AppCompatActivity(){
         val pseudoDisplay = view.findViewById<TextView>(R.id.user_info_pseudo)
         pseudoDisplay.text = client.pseudo
         val button= view.findViewById<Button>(R.id.user_info_quit)
+        skin_preview_imageview = view.findViewById<ImageView>(R.id.skin_preview_imageview)
+
+        getSkin(client.skin).execute()
         button.setOnClickListener {
             popupWindow.dismiss()
         }
+
+
         return true
+    }
+
+
+    private inner class getSkin(val skin : String) : AsyncTask<String, Void, Bitmap?>() {
+        init {
+            Toast.makeText(applicationContext, "Please wait, it may take a few minute...",     Toast.LENGTH_SHORT).show()
+        }
+
+        override fun doInBackground(vararg urls: String): Bitmap? {
+            val imageURL = "http://82.165.223.209:8080/skins/" + skin + ".png"
+            var image: Bitmap? = null
+            try {
+                val `in` = URL(imageURL).openStream()
+                image = BitmapFactory.decodeStream(`in`)
+            }
+            catch (e: Exception) {
+                Log.e("Error Message", e.message.toString())
+                e.printStackTrace()
+            }
+            return image
+        }
+
+        override fun onPostExecute(result: Bitmap?) {
+            skin_preview_imageview!!.setImageBitmap(result)
+        }
     }
 
 /*
@@ -455,6 +496,28 @@ class MainActivity : AppCompatActivity(){
     override fun onDestroy() {
         super.onDestroy()
         mapView!!.onDestroy()
+    }
+
+    private inner class DownloadImageFromInternet(var imageView: ImageView) : AsyncTask<String, Void, Bitmap?>() {
+        init {
+            Toast.makeText(applicationContext, "Please wait, it may take a few minute...",     Toast.LENGTH_SHORT).show()
+        }
+        override fun doInBackground(vararg urls: String): Bitmap? {
+            val imageURL = urls[0]
+            var image: Bitmap? = null
+            try {
+                val `in` = java.net.URL(imageURL).openStream()
+                image = BitmapFactory.decodeStream(`in`)
+            }
+            catch (e: Exception) {
+                Log.e("Error Message", e.message.toString())
+                e.printStackTrace()
+            }
+            return image
+        }
+        override fun onPostExecute(result: Bitmap?) {
+            imageView.setImageBitmap(result)
+        }
     }
 
 }

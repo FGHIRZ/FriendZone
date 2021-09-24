@@ -9,7 +9,9 @@ import android.widget.Toast
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.mapbox.mapboxsdk.geometry.LatLng
 import org.json.JSONObject
@@ -313,6 +315,17 @@ class RequestHandler {
         queue.add(deleteAccountRequest)
     }
 
+    fun requestSkinImage(skin : String)
+    {
+        val url = serverUrl + "/skins/souris.xml"
+        val stringRequest = StringRequest(Request.Method.GET, url,
+            Response.Listener<String> { response ->
+                Log.d("request handler", response.toString())
+            },
+            Response.ErrorListener {  })
+// Add the request to the RequestQueue.
+        queue.add(stringRequest)
+    }
     fun md5(input:String): String {
         val md = MessageDigest.getInstance("MD5")
         return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')

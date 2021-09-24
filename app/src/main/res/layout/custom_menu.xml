@@ -31,6 +31,13 @@
                 android:id="@+id/user_info_pseudo"
         />
 
+        <ImageView
+                android:id="@+id/skin_preview_imageview"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_margin="10dp"/>
+
         <Button
                 android:id="@+id/user_info_quit"
                 android:layout_width="wrap_content"

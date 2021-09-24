@@ -315,17 +315,21 @@ class RequestHandler {
         queue.add(deleteAccountRequest)
     }
 
-    fun requestSkinImage(skin : String)
+    fun requestSkinList(activity : Activity)
     {
-        val url = serverUrl + "/skins/souris.xml"
+        val url = serverUrl + "skins/"
+        Log.d("YOLO", "CA MARCHE OU PAS")
         val stringRequest = StringRequest(Request.Method.GET, url,
-            Response.Listener<String> { response ->
-                Log.d("request handler", response.toString())
+            { response ->
+                val skinList=JSONObject(response)
+                Log.d("YOLO", "response : " + response.toString())
+                (activity as MainActivity).initiateLoadingSkins(skinList.getJSONArray("file_list"))
             },
-            Response.ErrorListener {  })
+            {  })
 // Add the request to the RequestQueue.
         queue.add(stringRequest)
     }
+
     fun md5(input:String): String {
         val md = MessageDigest.getInstance("MD5")
         return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')

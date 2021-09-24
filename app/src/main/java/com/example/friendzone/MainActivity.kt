@@ -21,6 +21,7 @@ import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.LocationComponentOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
+import com.mapbox.mapboxsdk.maps.Image
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
@@ -56,7 +57,10 @@ class MainActivity : AppCompatActivity(){
     private var PRIVATEMODE = 0
     private val PREFNAME = "friendzone-app"
 
+    private val skin_image_list = mutableMapOf<String, Bitmap>()
+
     var skin_preview_imageview : ImageView? = null
+
 
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
@@ -70,6 +74,7 @@ class MainActivity : AppCompatActivity(){
 
         //Initialisation handler
         requestHandler.initialize(this)
+        requestHandler.requestSkinList(this)
 
 
 
@@ -294,7 +299,7 @@ class MainActivity : AppCompatActivity(){
             popupWindow.dismiss()
         }
 
-        getSkin(user.skin).execute()
+        skin_preview_imageview!!.setImageBitmap(skin_image_list[user.skin])
 
         return true
     }
@@ -324,7 +329,7 @@ class MainActivity : AppCompatActivity(){
         val button= view.findViewById<Button>(R.id.user_info_quit)
         skin_preview_imageview = view.findViewById<ImageView>(R.id.skin_preview_imageview)
 
-        getSkin(client.skin).execute()
+        skin_preview_imageview!!.setImageBitmap(skin_image_list[client.skin])
         button.setOnClickListener {
             popupWindow.dismiss()
         }
@@ -333,28 +338,42 @@ class MainActivity : AppCompatActivity(){
         return true
     }
 
-
-    private inner class getSkin(val skin : String) : AsyncTask<String, Void, Bitmap?>() {
+    fun initiateLoadingSkins(skinList: JSONArray)
+    {
+        Log.d("YOLO", "initializing")
+        loadSkins(skinList).execute()
+    }
+    private inner class loadSkins(val skinList : JSONArray) : AsyncTask<String, Void, Boolean>() {
         init {
+            Log.d("YOLO", "starting thread")
             Toast.makeText(applicationContext, "Please wait, it may take a few minute...",     Toast.LENGTH_SHORT).show()
         }
 
-        override fun doInBackground(vararg urls: String): Bitmap? {
-            val imageURL = "http://82.165.223.209:8080/skins/" + skin + ".png"
-            var image: Bitmap? = null
-            try {
-                val `in` = URL(imageURL).openStream()
-                image = BitmapFactory.decodeStream(`in`)
+        override fun doInBackground(vararg urls: String) : Boolean {
+
+
+            Log.d("YOLO", "Doing ...")
+            for(i in 0 until skinList.length())
+            {
+                val imageURL = "http://82.165.223.209:8080/skins/" + skinList[i] as String + ".png"
+                var image: Bitmap? = null
+                try {
+                    val `in` = URL(imageURL).openStream()
+                    image = BitmapFactory.decodeStream(`in`)
+                    skin_image_list.put(skinList[i] as String, image)
+                    Log.d("YOLO", "loaded an image")
+                }
+                catch (e: Exception) {
+                    Log.e("Error Message", e.message.toString())
+                    e.printStackTrace()
+                }
             }
-            catch (e: Exception) {
-                Log.e("Error Message", e.message.toString())
-                e.printStackTrace()
-            }
-            return image
+            return true
         }
 
-        override fun onPostExecute(result: Bitmap?) {
-            skin_preview_imageview!!.setImageBitmap(result)
+        override fun onPostExecute(result: Boolean) {
+            Log.d("test", "tout s'est bien passé")
+            Log.d("test", skin_image_list.toString())
         }
     }
 
@@ -496,28 +515,6 @@ class MainActivity : AppCompatActivity(){
     override fun onDestroy() {
         super.onDestroy()
         mapView!!.onDestroy()
-    }
-
-    private inner class DownloadImageFromInternet(var imageView: ImageView) : AsyncTask<String, Void, Bitmap?>() {
-        init {
-            Toast.makeText(applicationContext, "Please wait, it may take a few minute...",     Toast.LENGTH_SHORT).show()
-        }
-        override fun doInBackground(vararg urls: String): Bitmap? {
-            val imageURL = urls[0]
-            var image: Bitmap? = null
-            try {
-                val `in` = java.net.URL(imageURL).openStream()
-                image = BitmapFactory.decodeStream(`in`)
-            }
-            catch (e: Exception) {
-                Log.e("Error Message", e.message.toString())
-                e.printStackTrace()
-            }
-            return image
-        }
-        override fun onPostExecute(result: Bitmap?) {
-            imageView.setImageBitmap(result)
-        }
     }
 
 }

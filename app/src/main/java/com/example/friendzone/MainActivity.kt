@@ -56,6 +56,8 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
     private var locationManager: LocationManager? = null
 
+    private val skinList = mutableListOf<String>()
+
 
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
@@ -74,8 +76,9 @@ class MainActivity : AppCompatActivity(), LocationListener{
         val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
         client= User(sharedPreferences.getInt("USER_ID", 0))
         client.skin = sharedPreferences.getString("USER_SKIN", "default_skin")!!
-        client.pseudo = sharedPreferences.getString("USER_PSEUDO", "none")!!
+        client.pseudo = sharedPreferences.getString("USER_PSEUDO", "ERROR")!!
 
+        readSkinList()
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
         locationManager!!.requestLocationUpdates(
             LocationManager.GPS_PROVIDER,
@@ -269,6 +272,17 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
 
 //========================  User Menus & Popups =============================
+
+    private fun readSkinList()
+    {
+        val sharedPref = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        val skinListJSON = JSONObject(sharedPref.getString("SKIN_LIST", ""))
+        val skinListArray = skinListJSON.getJSONArray("file_list")
+        for(i in 0 until skinListArray.length())
+        {
+            skinList.add(skinListArray.getString(i))
+        }
+    }
 
     private fun displayUserMenu(symbol : Symbol) : Boolean
     {

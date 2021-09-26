@@ -3,7 +3,9 @@ package com.example.friendzone
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -28,12 +30,9 @@ import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import org.json.JSONArray
 import org.json.JSONObject
-import java.net.URL
 
 
-class MainActivity : AppCompatActivity(){
-
-
+class MainActivity : AppCompatActivity(), LocationListener{
 
     private val requestHandler = RequestHandler()
 
@@ -55,9 +54,7 @@ class MainActivity : AppCompatActivity(){
     private var PRIVATEMODE = 0
     private val PREFNAME = "friendzone-app"
 
-    private val skin_image_list = mutableMapOf<String, Bitmap>()
-
-    var skin_preview_imageview : ImageView? = null
+    private var locationManager: LocationManager? = null
 
 
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
@@ -65,7 +62,7 @@ class MainActivity : AppCompatActivity(){
         this.updateSettings()
     }
 
-
+    @SuppressLint("MissingPermission", "ResourceAsColor")
     //Lorsque l'activité est lancée :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,7 +76,13 @@ class MainActivity : AppCompatActivity(){
         client.skin = sharedPreferences.getString("USER_SKIN", "default_skin")!!
         client.pseudo = sharedPreferences.getString("USER_PSEUDO", "none")!!
 
-        Log.d("YOLO", client.skin + ", " + client.pseudo)
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
+        locationManager!!.requestLocationUpdates(
+            LocationManager.GPS_PROVIDER,
+            100,
+            10.0f, this
+        )
+
         //Initialisation de la mapbox & mise en page
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token))
         setContentView(R.layout.activity_map)
@@ -97,6 +100,8 @@ class MainActivity : AppCompatActivity(){
         settingsButton.setOnClickListener {
             openSettingsPage()
         }
+        val dropPinView = ImageView(this)
+        dropPinView.setImageResource(R.drawable.ic_skin_sourismorte)
     }
 
 
@@ -234,7 +239,6 @@ class MainActivity : AppCompatActivity(){
             if(!user.match)
             {
                 symbolManager.delete(user.symbol)
-                Log.d("user deleted", "a")
                 users.remove(user)
             }
             else
@@ -285,12 +289,12 @@ class MainActivity : AppCompatActivity(){
             // Inflate a custom view using layout inflater
             val view = inflater.inflate(R.layout.user_info, mapView, false)
 
-            skin_preview_imageview = view.findViewById(R.id.skin_preview_imageview)
+            val skinPreviewImageview : ImageView = view.findViewById(R.id.skin_preview_imageview)
 
             val skinUrl = requestHandler.serverUrl + "skins/" + user.skin + ".png"
             Glide.with(this)
                 .load(skinUrl)
-                .into(skin_preview_imageview!!)
+                .into(skinPreviewImageview)
 
             // Initialize a new instance of popup window
             val popupWindow = PopupWindow(
@@ -311,9 +315,6 @@ class MainActivity : AppCompatActivity(){
             button.setOnClickListener {
                 popupWindow.dismiss()
             }
-
-            skin_preview_imageview!!.setImageBitmap(skin_image_list[user.skin])
-
         }
         return true
     }
@@ -323,8 +324,6 @@ class MainActivity : AppCompatActivity(){
         val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         // Inflate a custom view using layout inflater
         val view = inflater.inflate(R.layout.custom_menu,mapView,false)
-
-        skin_preview_imageview = view.findViewById<ImageView>(R.id.skin_preview_imageview)
 
         // Initialize a new instance of popup window
         val popupWindow = PopupWindow(
@@ -341,14 +340,13 @@ class MainActivity : AppCompatActivity(){
         val pseudoDisplay = view.findViewById<TextView>(R.id.user_info_pseudo)
         pseudoDisplay.text = client.pseudo
         val button= view.findViewById<Button>(R.id.user_info_quit)
-        skin_preview_imageview = view.findViewById<ImageView>(R.id.skin_preview_imageview)
+        val skinPreviewImageview : ImageView= view.findViewById(R.id.skin_preview_imageview)
 
         val skinUrl = requestHandler.serverUrl + "skins/" + client.skin + ".png"
         Glide.with(this)
             .load(skinUrl)
-            .into(skin_preview_imageview!!)
+            .into(skinPreviewImageview)
 
-        skin_preview_imageview!!.setImageBitmap(skin_image_list[client.skin])
         button.setOnClickListener {
             popupWindow.dismiss()
         }
@@ -402,14 +400,12 @@ class MainActivity : AppCompatActivity(){
                 this.mapStyle = it
                 mapboxMap.setMinZoomPreference(2.00)
 
-
                 enableLocationComponent(it)
 
                 symbolManager = SymbolManager(mapView!!, mapboxMap, it)
                 symbolManager.iconAllowOverlap = true
                 symbolManager.iconIgnorePlacement = true
 
-                Log.d("yolo", client.skin)
                 val symbol = symbolManager.create(
                     SymbolOptions()
                         .withLatLng(LatLng(mapboxMap.locationComponent.lastKnownLocation!!.latitude, mapboxMap.locationComponent.lastKnownLocation!!.longitude))
@@ -419,8 +415,8 @@ class MainActivity : AppCompatActivity(){
 
                 client.symbol = symbol
 
-                symbolManager.addClickListener {
-                    displayUserMenu(it)
+                symbolManager.addClickListener { clickedSymbol ->
+                    displayUserMenu(clickedSymbol)
                 }
                 //Activer le tracking de l'utilisateur et la balise de localisation
 
@@ -470,13 +466,6 @@ class MainActivity : AppCompatActivity(){
 
 
         }
-        mapboxMap.locationComponent.addOnLocationStaleListener {
-            val location = mapboxMap.locationComponent.lastKnownLocation
-            if(client.symbol!= null)
-            {
-                client.symbol!!.latLng = LatLng(location!!.latitude, location.longitude)
-            }
-        }
     }
 
 //===============================================================
@@ -512,6 +501,14 @@ class MainActivity : AppCompatActivity(){
     override fun onDestroy() {
         super.onDestroy()
         mapView!!.onDestroy()
+    }
+
+    override fun onLocationChanged(location : Location) {
+        if(client.symbol!= null)
+        {
+            client.symbol!!.latLng = LatLng(location.latitude, location.longitude)
+            symbolManager.update(client.symbol)
+        }
     }
 
 }

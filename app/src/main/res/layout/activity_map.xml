@@ -35,6 +35,7 @@
             android:gravity="center">
 
         <Button
+                android:id="@+id/spot_button"
                 android:layout_width="96dp"
                 android:layout_height="96dp"
                 android:gravity="center"

@@ -15,6 +15,7 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -43,7 +44,6 @@ class MainActivity : AppCompatActivity(), LocationListener{
     private var users = mutableListOf<User>()
     private var events = mutableListOf<Event>()
 
-
     private lateinit var client : User
 
     private lateinit var mapStyle : Style
@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
     private val skinList = mutableListOf<String>()
 
+    private var eventMenuExpanded : Boolean = false
 
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
@@ -105,6 +106,24 @@ class MainActivity : AppCompatActivity(), LocationListener{
         }
         val dropPinView = ImageView(this)
         dropPinView.setImageResource(R.drawable.ic_skin_sourismorte)
+
+        val optionsMenu : LinearLayout = findViewById(R.id.options_menu_layout)
+        val dropDownArrow : Button = findViewById(R.id.event_dropdown_arrow)
+        dropDownArrow.setOnClickListener {
+
+            if(eventMenuExpanded)
+            {
+                optionsMenu.isEnabled = false
+                optionsMenu.isVisible = false
+                eventMenuExpanded = false
+            }
+            else
+            {
+                optionsMenu.isEnabled = true
+                optionsMenu.isVisible = true
+                eventMenuExpanded = true
+            }
+        }
     }
 
 
@@ -276,7 +295,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
     private fun readSkinList()
     {
         val sharedPref = getSharedPreferences(PREFNAME, PRIVATEMODE)
-        val skinListJSON = JSONObject(sharedPref.getString("SKIN_LIST", ""))
+        val skinListJSON = JSONObject(sharedPref.getString("SKINS_LIST", ""))
         val skinListArray = skinListJSON.getJSONArray("file_list")
         for(i in 0 until skinListArray.length())
         {
@@ -292,6 +311,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
         }
         else {
             var user = User(0)
+
             for (u in users)
             {
                 if(symbol == u.symbol)
@@ -299,6 +319,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
                     user = u
                 }
             }
+
             val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             // Inflate a custom view using layout inflater
             val view = inflater.inflate(R.layout.user_info, mapView, false)
@@ -400,6 +421,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
 //=====================================================
 
 
+
 //======================== CONFIGURATION =============================
 
 
@@ -476,6 +498,12 @@ class MainActivity : AppCompatActivity(), LocationListener{
 // Set the LocationComponent's render mode
             renderMode = RenderMode.NORMAL
 
+            addOnLocationStaleListener {
+                lastKnownLocation
+                client.symbol!!.latLng = LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
+                symbolManager.update(client.symbol)
+            }
+
 
 
 
@@ -483,7 +511,6 @@ class MainActivity : AppCompatActivity(), LocationListener{
     }
 
 //===============================================================
-
 
 
 //Fonctions de l'activité
@@ -518,11 +545,11 @@ class MainActivity : AppCompatActivity(), LocationListener{
     }
 
     override fun onLocationChanged(location : Location) {
-        if(client.symbol!= null)
+        /*if(client.symbol!= null)
         {
             client.symbol!!.latLng = LatLng(location.latitude, location.longitude)
             symbolManager.update(client.symbol)
-        }
+        }*/
     }
 
 }

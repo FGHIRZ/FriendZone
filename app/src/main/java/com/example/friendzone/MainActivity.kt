@@ -451,6 +451,8 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
                 client.symbol = symbol
 
+                updateUserSymbolLoop()
+
                 symbolManager.addClickListener { clickedSymbol ->
                     displayUserMenu(clickedSymbol)
                 }
@@ -498,16 +500,20 @@ class MainActivity : AppCompatActivity(), LocationListener{
 // Set the LocationComponent's render mode
             renderMode = RenderMode.NORMAL
 
-            addOnLocationStaleListener {
-                lastKnownLocation
-                client.symbol!!.latLng = LatLng(lastKnownLocation!!.latitude, lastKnownLocation!!.longitude)
-                symbolManager.update(client.symbol)
-            }
-
-
-
-
         }
+    }
+
+    private fun updateUserSymbolLoop(){
+        val location = mapboxMap.locationComponent.lastKnownLocation!!
+        if(client!=null && location!=null)
+        {
+            client.symbol!!.latLng=LatLng(location.latitude, location.longitude)
+            symbolManager.update(client.symbol)
+        }
+        Handler(Looper.getMainLooper()).postDelayed({
+            updateUserSymbolLoop()
+
+        }, 100)
     }
 
 //===============================================================

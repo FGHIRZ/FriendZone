@@ -11,6 +11,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -482,8 +483,9 @@ class MainActivity : AppCompatActivity(), LocationListener{
                             SymbolOptions()
                                 .withLatLng(clickLocation)
                                 .withIconImage("MeetGameFlag")
-                                .withIconSize( 0.8f)
-                                .withIconOpacity(0.8f))
+                                .withIconSize( 2.0f)
+                                .withIconOpacity(1.0f))
+
 
                         flag.symbol = symbol
                         flag.enabled = true

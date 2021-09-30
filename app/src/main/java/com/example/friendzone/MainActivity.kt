@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
     private val skinList = mutableListOf<String>()
 
     private var eventMenuExpanded : Boolean = false
+    private var flag : Flag = Flag(false)
 
     private val settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
@@ -107,24 +108,18 @@ class MainActivity : AppCompatActivity(), LocationListener{
         val dropPinView = ImageView(this)
         dropPinView.setImageResource(R.drawable.ic_skin_sourismorte)
 
-        val spotButton : Button = findViewById(R.id.spot_button)
-
-        val eventMenu : RelativeLayout = findViewById(R.id.event_menu)
-
-        spotButton.setOnClickListener {
-            if(eventMenu.isVisible)
-            {
-                eventMenu.isVisible=false
-            }
-            else
-            {
-                eventMenu.isVisible=true
-            }
-        }
 
         val optionsMenu : LinearLayout = findViewById(R.id.options_menu_layout)
         val dropDownArrow : Button = findViewById(R.id.event_dropdown_arrow)
 
+        val cancelButton : Button = findViewById(R.id.cancel_button)
+        cancelButton.setOnClickListener {
+            val eventMenu : RelativeLayout = findViewById(R.id.event_menu)
+            eventMenu.isVisible = false
+            cancelButton.isVisible = false
+            symbolManager.delete(flag.symbol)
+            flag.enabled=false
+        }
 
         dropDownArrow.setOnClickListener {
 
@@ -448,7 +443,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
         mapView?.getMapAsync { mapboxMap ->
 
             //Lorsque la map est chargée, on éxecute ce code
-            mapboxMap.setStyle(Style.Builder().fromUri(resources.getString(R.string.mapbox_style_url))) {
+            mapboxMap.setStyle(Style.Builder().fromUri(resources.getString(R.string.mapbox_style_url))) { it ->
                 this.mapboxMap = mapboxMap
                 this.mapStyle = it
                 mapboxMap.setMinZoomPreference(2.00)
@@ -476,6 +471,31 @@ class MainActivity : AppCompatActivity(), LocationListener{
                 //Activer le tracking de l'utilisateur et la balise de localisation
 
 
+                mapboxMap.addOnMapLongClickListener { clickLocation ->
+                    if(flag.enabled)
+                    {
+                        flag.symbol!!.latLng=clickLocation
+                    }
+                    else
+                    {
+                        val symbol = symbolManager.create(
+                            SymbolOptions()
+                                .withLatLng(clickLocation)
+                                .withIconImage("MeetGameFlag")
+                                .withIconSize( 0.8f)
+                                .withIconOpacity(0.8f))
+
+                        flag.symbol = symbol
+                        flag.enabled = true
+                    }
+                    val eventMenu : RelativeLayout = findViewById(R.id.event_menu)
+                    eventMenu.isVisible = true
+
+                    val cancelButton : Button = findViewById(R.id.cancel_button)
+                    cancelButton.isVisible=true
+
+                    true
+                }
                 //Commencer la boucle de contrôle principale
                 updateLoop()
 

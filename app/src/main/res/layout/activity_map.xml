@@ -127,49 +127,14 @@
 
     </RelativeLayout>
 
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-        <Button
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:text="flag"
-                android:textSize="15dp"
-                android:textStyle="bold"
-                android:background="@drawable/ic_button"
-                android:layout_margin="5dp"
-        />
-
-        <Button
-                android:id="@+id/spot_button"
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:text="SPOT!"
-                android:textSize="15dp"
-                android:textStyle="bold"
-                android:background="@drawable/ic_button"
-                android:layout_margin="30dp"
-        />
-
-        <Button
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:text="=)"
-                android:textSize="15dp"
-                android:textStyle="bold"
-                android:background="@drawable/ic_button"
-                android:layout_margin="5dp"
-        >
-        </Button>
-    </LinearLayout>
+    <Button
+            android:id="@+id/cancel_button"
+            android:layout_width="50dp" android:layout_height="50dp"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="20dp"
+            android:background="@drawable/validate_button"
+            android:text="X"
+            android:textSize="30dp"
+            android:visibility="gone"
+            android:textColor="#FF006A"/>
 </FrameLayout>

@@ -24,7 +24,7 @@
             android:layout_gravity="right"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
-            android:layout_marginTop="25dp"
+            android:layout_marginTop="100dp"
             android:background="@drawable/settings_layout_bg">
         <Button
                 android:layout_width="32dp"
@@ -42,10 +42,9 @@
             android:layout_height="wrap_content"
             android:background="@drawable/event_menu_bg"
             android:gravity="center_horizontal"
-            android:layout_gravity="bottom"
-            tools:visibility="visible"
-            android:id="@+id/event_menu"
-            android:layout_marginTop="10dp">
+            android:layout_gravity="top"
+            android:visibility="gone"
+            android:id="@+id/event_menu">
         <LinearLayout
                 android:id="@+id/main_menu_layout"
                 android:layout_width="match_parent"
@@ -67,7 +66,7 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
-            android:layout_margin="5dp">
+            android:layout_margin="10dp">
                 <Button
                         android:layout_width="50dp"
                         android:layout_height="50dp"/>
@@ -119,13 +118,58 @@
                     android:text="ERWAN VERZAT"/>
         </LinearLayout>
         <Button
-                android:layout_width="30dp"
-                android:layout_height="20dp"
-                android:background="@drawable/ic_keyboard_arrow_up_white_24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_arrow_drop_down_white_24dp"
                 android:id="@+id/event_dropdown_arrow"
-                android:layout_alignParentTop="true"
-                android:layout_centerInParent="true" android:layout_centerVertical="true"/>
+                android:layout_below="@+id/main_menu_layout"
+                android:layout_centerHorizontal="true"/>
 
     </RelativeLayout>
 
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+        <Button
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:text="flag"
+                android:textSize="15dp"
+                android:textStyle="bold"
+                android:background="@drawable/ic_button"
+                android:layout_margin="5dp"
+        />
+
+        <Button
+                android:id="@+id/spot_button"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:text="SPOT!"
+                android:textSize="15dp"
+                android:textStyle="bold"
+                android:background="@drawable/ic_button"
+                android:layout_margin="30dp"
+        />
+
+        <Button
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:text="=)"
+                android:textSize="15dp"
+                android:textStyle="bold"
+                android:background="@drawable/ic_button"
+                android:layout_margin="5dp"
+        >
+        </Button>
+    </LinearLayout>
 </FrameLayout>

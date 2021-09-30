@@ -107,8 +107,25 @@ class MainActivity : AppCompatActivity(), LocationListener{
         val dropPinView = ImageView(this)
         dropPinView.setImageResource(R.drawable.ic_skin_sourismorte)
 
+        val spotButton : Button = findViewById(R.id.spot_button)
+
+        val eventMenu : RelativeLayout = findViewById(R.id.event_menu)
+
+        spotButton.setOnClickListener {
+            if(eventMenu.isVisible)
+            {
+                eventMenu.isVisible=false
+            }
+            else
+            {
+                eventMenu.isVisible=true
+            }
+        }
+
         val optionsMenu : LinearLayout = findViewById(R.id.options_menu_layout)
         val dropDownArrow : Button = findViewById(R.id.event_dropdown_arrow)
+
+
         dropDownArrow.setOnClickListener {
 
             if(eventMenuExpanded)

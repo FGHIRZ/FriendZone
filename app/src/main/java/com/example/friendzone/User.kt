@@ -10,5 +10,6 @@ class User constructor(var user_id: Int)
     var pseudo = ""
     var symbol : Symbol? = null
     var match=false
+    var hasFlag =false
 
 }

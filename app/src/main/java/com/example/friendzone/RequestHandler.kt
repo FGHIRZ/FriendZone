@@ -322,8 +322,20 @@ class RequestHandler {
         val stringRequest = StringRequest(Request.Method.GET, url,
             { response ->
                 val skinList=JSONObject(response)
-                Log.d("YOLO", "response : " + response.toString())
-                (activity as CacheActivity).loadSkinImages(skinList)
+                this.requestEventList(activity, skinList)
+            },
+            {  })
+// Add the request to the RequestQueue.
+        queue.add(stringRequest)
+    }
+
+    fun requestEventList(activity : Activity, skinList : JSONObject)
+    {
+        val url = serverUrl + "events/"
+        val stringRequest = StringRequest(Request.Method.GET, url,
+            { response ->
+                val eventList=JSONObject(response)
+                (activity as CacheActivity).loadSkinImages(skinList, eventList)
             },
             {  })
 // Add the request to the RequestQueue.

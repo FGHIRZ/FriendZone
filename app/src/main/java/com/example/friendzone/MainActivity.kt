@@ -19,6 +19,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.camera.CameraPosition
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.LocationComponentOptions
@@ -115,11 +117,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
         val cancelButton : Button = findViewById(R.id.cancel_button)
         cancelButton.setOnClickListener {
-            val eventMenu : RelativeLayout = findViewById(R.id.event_menu)
-            eventMenu.isVisible = false
-            cancelButton.isVisible = false
-            symbolManager.delete(flag.symbol)
-            flag.enabled=false
+            cancelFlag()
         }
 
         dropDownArrow.setOnClickListener {
@@ -137,6 +135,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
                 eventMenuExpanded = true
             }
         }
+        fillScrollView()
     }
 
 
@@ -202,7 +201,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
                     SymbolOptions()
                         .withLatLng(LatLng(newEvent.getDouble("lat"), newEvent.getDouble("lon")))
                         .withIconImage(newEvent.getString("type"))
-                        .withIconSize( 1.2f))
+                        .withIconSize( 2.0f))
 
                 val event = Event(newEvent.getInt("event_id"))
                 event.type=newEvent.getString("type")
@@ -434,6 +433,72 @@ class MainActivity : AppCompatActivity(), LocationListener{
 //=====================================================
 
 
+//======================== FLAG =============================
+
+
+private fun centerOnFlag()
+{
+    val position = CameraPosition.Builder()
+        .target(flag.symbol!!.latLng)
+        .zoom(16.0)
+        .build()
+
+    mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 1000);
+}
+
+
+private fun handleLongClick( clickedPoint : LatLng)
+{
+    var actorClicked = false
+    val clientDistance = clickedPoint.distanceTo(client.symbol!!.latLng)
+    if(clientDistance < 10)
+    {
+        actorClicked = true
+        //TODO : CLIENT CLICKED
+    }
+    if(!actorClicked)
+    {
+        if(!flag.enabled)
+        {
+            mapboxMap.uiSettings.isZoomGesturesEnabled = false
+            mapboxMap.uiSettings.isScrollGesturesEnabled = false
+
+            val symbol = symbolManager.create(
+                SymbolOptions()
+                    .withLatLng(clickedPoint)
+                    .withIconImage("MeetGameFlag")
+                    .withIconSize( 3.0f)
+                    .withIconOpacity(1.0f))
+
+            flag.symbol = symbol
+            flag.enabled = true
+
+            centerOnFlag()
+            val eventMenu : RelativeLayout = findViewById(R.id.event_menu)
+            eventMenu.isVisible = true
+
+            val cancelButton : Button = findViewById(R.id.cancel_button)
+            cancelButton.isVisible=true
+
+        }
+    }
+}
+
+    private fun cancelFlag()
+    {
+        val eventMenu : RelativeLayout = findViewById(R.id.event_menu)
+        val cancelButton : Button = findViewById(R.id.cancel_button)
+        eventMenu.isVisible = false
+        cancelButton.isVisible = false
+        symbolManager.delete(flag.symbol)
+        flag.enabled=false
+        mapboxMap.uiSettings.isZoomGesturesEnabled = true
+        mapboxMap.uiSettings.isScrollGesturesEnabled = true
+
+    }
+
+
+//====================================================================
 
 //======================== CONFIGURATION =============================
 
@@ -462,6 +527,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
                         .withIconSize( 1.2f)
                         .withIconOpacity(1.0f))
 
+
                 client.symbol = symbol
 
                 updateUserSymbolLoop()
@@ -473,29 +539,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
 
                 mapboxMap.addOnMapLongClickListener { clickLocation ->
-                    if(flag.enabled)
-                    {
-                        flag.symbol!!.latLng=clickLocation
-                    }
-                    else
-                    {
-                        val symbol = symbolManager.create(
-                            SymbolOptions()
-                                .withLatLng(clickLocation)
-                                .withIconImage("MeetGameFlag")
-                                .withIconSize( 2.0f)
-                                .withIconOpacity(1.0f))
-
-
-                        flag.symbol = symbol
-                        flag.enabled = true
-                    }
-                    val eventMenu : RelativeLayout = findViewById(R.id.event_menu)
-                    eventMenu.isVisible = true
-
-                    val cancelButton : Button = findViewById(R.id.cancel_button)
-                    cancelButton.isVisible=true
-
+                    handleLongClick(clickLocation)
                     true
                 }
                 //Commencer la boucle de contrôle principale
@@ -553,6 +597,36 @@ class MainActivity : AppCompatActivity(), LocationListener{
             updateUserSymbolLoop()
 
         }, 100)
+    }
+
+    private fun fillScrollView()
+    {
+
+        val layout : LinearLayout = findViewById(R.id.scroll_view)
+
+        val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+
+        val eventListJSON = JSONObject(sharedPreferences.getString("EVENT_LIST", "{}"))
+        Log.d("EVENT LIST (MAP)", eventListJSON.toString())
+        val eventListArray = eventListJSON.getJSONArray("file_list")
+
+        for(i in 0 until eventListArray.length())
+        {
+            Log.d("EVENT LIST (MAP)", "adding icon")
+            val img = ImageView(this)
+            img.layoutParams = LinearLayout.LayoutParams(100, 100)
+            img.id = View.generateViewId()
+            layout.addView(img)
+
+            img.setOnClickListener {
+                requestHandler.requestEventCreation(client.user_id, eventListArray[i] as String, flag.symbol!!.latLng, this )
+                cancelFlag()
+            }
+            val skinUrl = requestHandler.serverUrl + "events/" + eventListArray[i] + ".png"
+            Glide.with(this)
+                .load(skinUrl)
+                .into(img)
+        }
     }
 
 //===============================================================

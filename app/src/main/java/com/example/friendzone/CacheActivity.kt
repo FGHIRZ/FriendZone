@@ -26,10 +26,12 @@ class CacheActivity : AppCompatActivity() {
 
     }
 
-    fun loadSkinImages(skinListJSON: JSONObject)
+    fun loadSkinImages(skinListJSON: JSONObject, eventListJSON : JSONObject)
     {
         val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
         sharedPreferences.edit().putString("SKINS_LIST", skinListJSON.toString()).commit()
+        sharedPreferences.edit().putString("EVENT_LIST", eventListJSON.toString()).commit()
+        Log.d("EVENT LIST (CACHE)", eventListJSON.toString())
 
         Log.d("LECACHE", skinListJSON.toString())
 
@@ -37,6 +39,14 @@ class CacheActivity : AppCompatActivity() {
         for(i in 0 until skinList.length())
         {
             val url="http://82.165.223.209:8080/skins/" + skinList[i] as String + ".png"
+            Glide.with(this)
+                .load(url)
+        }
+
+        val eventList = eventListJSON.getJSONArray("file_list")
+        for(i in 0 until eventList.length())
+        {
+            val url="http://82.165.223.209:8080/events/" + eventList[i] as String + ".png"
             Glide.with(this)
                 .load(url)
         }

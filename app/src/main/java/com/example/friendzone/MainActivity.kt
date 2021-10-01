@@ -103,10 +103,15 @@ class MainActivity : AppCompatActivity(), LocationListener{
         //Chargement des settings
         updateSettings()
 
-        //Initialiser bouton settings
+        //Initialiser bouton settingsuser.skin
         val settingsButton : Button = findViewById(R.id.settings_button)
         settingsButton.setOnClickListener {
             openSettingsPage()
+        }
+
+        val profileButton : Button = findViewById(R.id.custom_button)
+        profileButton.setOnClickListener {
+            openProfilePage()
         }
         val dropPinView = ImageView(this)
         dropPinView.setImageResource(R.drawable.ic_skin_sourismorte)
@@ -144,6 +149,12 @@ class MainActivity : AppCompatActivity(), LocationListener{
     private fun openSettingsPage()
     {
         val settingsIntent = Intent(this, Settings::class.java)
+        settingsLauncher.launch(settingsIntent)
+    }
+
+    private fun openProfilePage()
+    {
+        val settingsIntent = Intent(this, InfosPage::class.java)
         settingsLauncher.launch(settingsIntent)
     }
 

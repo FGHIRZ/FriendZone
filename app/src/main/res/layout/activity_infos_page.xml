@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,4 +7,71 @@
         android:layout_height="match_parent"
         tools:context=".InfosPage">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MY PROFILE :"
+            android:layout_centerHorizontal="true"
+            android:textSize="35dp"
+            android:layout_margin="20dp"
+            android:layout_above="@id/skin_preview_imageview"/>
+    <ImageView
+                android:id="@+id/skin_preview_imageview"
+                android:layout_width="100dp"
+               android:layout_height="200dp"
+               android:layout_margin="35dp"
+               android:layout_centerInParent="true"
+    />
+
+    <ImageView
+            android:id="@+id/left_arrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/left_arrow"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@id/skin_preview_imageview"/>
+
+    <ImageView
+            android:id="@+id/right_arrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/right_arrow"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/skin_preview_imageview"/>
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/skin_preview_imageview"
+            android:layout_centerHorizontal="true">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PSEUDO"
+                android:textColor="@color/white"
+                android:id="@+id/pseudo_textview"
+        />
+
+        <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PSEUDO"
+                android:textColor="@color/white"
+                android:id="@+id/pseudo_edittext"
+                android:visibility="gone"/>
+
+        <ImageView
+                android:id="@+id/edit_pseudo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/edit_icon"
+                android:layout_marginLeft="10dp"
+        />
+
+    </LinearLayout>
+
+
+
+</RelativeLayout>

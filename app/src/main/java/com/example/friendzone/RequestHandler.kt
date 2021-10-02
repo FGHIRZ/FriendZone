@@ -346,4 +346,35 @@ class RequestHandler {
         val md = MessageDigest.getInstance("MD5")
         return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
     }
+
+    fun requestSkinChange(selectedSkin: String?, user_id: Int, activity: Activity) {
+        val json = JSONObject()
+        val userJSON= JSONObject()
+        userJSON.put("user_id", user_id)
+        userJSON.put("user_skin", selectedSkin)
+
+        json.put("request", "change_skin")
+        json.put("params", userJSON)
+
+        val changeSkinRequest = JsonObjectRequest(Request.Method.POST, serverUrl, json, { response->
+            Log.d("requestHandler", response.toString())
+            if(response.getString("status") == "ok")
+            {
+                Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
+            }
+            else
+            {
+                Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
+            }
+        }, {
+        })
+        changeSkinRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+
+        queue.add(changeSkinRequest)
+
+
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.friendzone
 
+import android.content.SharedPreferences
 import android.media.Image
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -23,6 +24,7 @@ class InfosPage : AppCompatActivity() {
 
         requestHandler.initialize(this)
         val sharedPreferences  = getSharedPreferences(PREFNAME, MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
         val skin = sharedPreferences.getString("USER_SKIN", "default_skin")
         val skinPreview : ImageView = findViewById(R.id.skin_preview_imageview)
 
@@ -58,11 +60,14 @@ class InfosPage : AppCompatActivity() {
             {
                 index = index - 1
             }
-            val new_skin = skinListArray[index]
-            val skinUrl = requestHandler.serverUrl + "skins/" + new_skin + ".png"
+            val newSkin = skinListArray[index]
+            val skinUrl = requestHandler.serverUrl + "skins/" + newSkin + ".png"
             Glide.with(this)
                 .load(skinUrl)
                 .into(skinPreview)
+
+            editor.putString("USER_SKIN_SELECTED", newSkin.toString())
+            editor.apply()
         }
 
         rightArrow.setOnClickListener {
@@ -72,13 +77,15 @@ class InfosPage : AppCompatActivity() {
             }
             else
             {
-                index = index + 1
+                index += 1
             }
-            val new_skin = skinListArray[index]
-            val skinUrl = requestHandler.serverUrl + "skins/" + new_skin + ".png"
+            val newSkin = skinListArray[index]
+            val skinUrl = requestHandler.serverUrl + "skins/" + newSkin + ".png"
             Glide.with(this)
                 .load(skinUrl)
                 .into(skinPreview)
+            editor.putString("USER_SKIN_SELECTED", newSkin.toString())
+            editor.apply()
         }
 
         val editPen : ImageView = findViewById(R.id.edit_pseudo)
@@ -87,5 +94,25 @@ class InfosPage : AppCompatActivity() {
             pseudoEdit.isVisible = true
         }
 
+
+
     }
+
+    override fun onStop() {
+        super.onStop()
+
+        requestHandler.initialize(this)
+        val sharedPreferences  = getSharedPreferences(PREFNAME, MODE_PRIVATE)
+        val skin = sharedPreferences.getString("USER_SKIN", "default_skin")
+        val userId = sharedPreferences.getInt("USER_ID", 0)
+        val selectedSkin = sharedPreferences.getString("USER_SKIN_SELECTED", "default_skin")
+
+        if (skin != selectedSkin){
+            requestHandler.requestSkinChange(selectedSkin,userId, this)
+        }
+
+    }
+
+
+
 }

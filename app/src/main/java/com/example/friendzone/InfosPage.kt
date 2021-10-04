@@ -13,10 +13,13 @@ import com.bumptech.glide.Glide
 import org.json.JSONObject
 
 class InfosPage : AppCompatActivity() {
+
     private var PRIVATEMODE = 0
     private val PREFNAME = "friendzone-app"
 
     private val requestHandler = RequestHandler()
+
+    private var skinSelected : String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,8 +69,7 @@ class InfosPage : AppCompatActivity() {
                 .load(skinUrl)
                 .into(skinPreview)
 
-            editor.putString("USER_SKIN_SELECTED", newSkin.toString())
-            editor.apply()
+            skinSelected = newSkin.toString()
         }
 
         rightArrow.setOnClickListener {
@@ -84,8 +86,7 @@ class InfosPage : AppCompatActivity() {
             Glide.with(this)
                 .load(skinUrl)
                 .into(skinPreview)
-            editor.putString("USER_SKIN_SELECTED", newSkin.toString())
-            editor.apply()
+            skinSelected = newSkin.toString()
         }
 
         val editPen : ImageView = findViewById(R.id.edit_pseudo)
@@ -98,19 +99,18 @@ class InfosPage : AppCompatActivity() {
 
     }
 
-    override fun onStop() {
+     override fun onStop() {
         super.onStop()
 
         requestHandler.initialize(this)
         val sharedPreferences  = getSharedPreferences(PREFNAME, MODE_PRIVATE)
         val skin = sharedPreferences.getString("USER_SKIN", "default_skin")
         val userId = sharedPreferences.getInt("USER_ID", 0)
-        val selectedSkin = sharedPreferences.getString("USER_SKIN_SELECTED", "default_skin")
+         sharedPreferences.edit().putString("USER_SKIN", skinSelected).commit()
 
-        if (skin != selectedSkin){
-            requestHandler.requestSkinChange(selectedSkin,userId, this)
+        if (skin != skinSelected){
+            requestHandler.requestSkinChange(skinSelected,userId, this)
         }
-
     }
 
 

@@ -69,6 +69,11 @@ class MainActivity : AppCompatActivity(), LocationListener{
         this.updateSettings()
     }
 
+    private val profileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+    {
+        this.updateProfile()
+    }
+
     @SuppressLint("MissingPermission", "ResourceAsColor")
     //Lorsque l'activité est lancée :
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -154,8 +159,9 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
     private fun openProfilePage()
     {
+        Log.d("TESTEST", "profile pag opened")
         val settingsIntent = Intent(this, InfosPage::class.java)
-        settingsLauncher.launch(settingsIntent)
+        profileLauncher.launch(settingsIntent)
     }
 
     private fun updateSettings()
@@ -168,6 +174,19 @@ class MainActivity : AppCompatActivity(), LocationListener{
         {
             deleteUserList()
         }
+    }
+
+    private fun updateProfile()
+    {
+        val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        val new_skin = sharedPreferences.getString("USER_SKIN", "default_skin")
+        val new_pseudo = sharedPreferences.getString("USER_PSEUDO", "dummy")
+
+        Log.d("TESTEST", new_skin!!)
+        client.skin = new_skin!!
+
+        client.symbol!!.iconImage = new_skin!!
+        symbolManager.update(client.symbol)
     }
 //=========================================================
 

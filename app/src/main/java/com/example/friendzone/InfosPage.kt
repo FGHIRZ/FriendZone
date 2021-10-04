@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
+import org.json.JSONArray
 import org.json.JSONObject
 
 class InfosPage : AppCompatActivity() {
@@ -23,6 +24,8 @@ class InfosPage : AppCompatActivity() {
     private var ogSkin = ""
     private var newSkin = ""
 
+    private var skinListArray = JSONArray()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_infos_page)
@@ -34,7 +37,7 @@ class InfosPage : AppCompatActivity() {
         val skinPreview : ImageView = findViewById(R.id.skin_preview_imageview)
 
         val skinListJSON = JSONObject(sharedPreferences.getString("SKINS_LIST", "{}"))
-        val skinListArray = skinListJSON.getJSONArray("file_list")
+        skinListArray = skinListJSON.getJSONArray("file_list")
         var index = 0
 
         Log.d("ProfilePage", skinListArray.toString())
@@ -70,14 +73,7 @@ class InfosPage : AppCompatActivity() {
             {
                 index = index - 1
             }
-            newSkin = skinListArray.getString(index)
-            Log.d("ProfilePage", skinListArray.getString(index))
-            Log.d("ProfilePage", index.toString())
-            val skinUrl = requestHandler.serverUrl + "skins/" + newSkin + ".png"
-            Glide.with(this)
-                .load(skinUrl)
-                .into(skinPreview)
-            sharedPreferences.edit().putString("USER_SKIN", newSkin).apply()
+            update_skin(index,skinPreview)
         }
 
         rightArrow.setOnClickListener {
@@ -89,12 +85,7 @@ class InfosPage : AppCompatActivity() {
             {
                 index += 1
             }
-            newSkin = skinListArray.getString(index)
-            val skinUrl = requestHandler.serverUrl + "skins/" + newSkin + ".png"
-            Glide.with(this)
-                .load(skinUrl)
-                .into(skinPreview)
-            sharedPreferences.edit().putString("USER_SKIN", newSkin).apply()
+            update_skin(index,skinPreview)
         }
 
         val editPen : ImageView = findViewById(R.id.edit_pseudo)
@@ -104,6 +95,18 @@ class InfosPage : AppCompatActivity() {
         }
     }
 
+    private fun update_skin(index : Int, skinPreview : ImageView)
+    {
+        val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        newSkin = skinListArray.getString(index)
+        Log.d("ProfilePage", skinListArray.getString(index))
+        Log.d("ProfilePage", index.toString())
+        val skinUrl = requestHandler.serverUrl + "skins/" + newSkin + ".png"
+        Glide.with(this)
+            .load(skinUrl)
+            .into(skinPreview)
+        sharedPreferences.edit().putString("USER_SKIN", newSkin).apply()
+    }
     private fun ApplyChanges()
     {
         val sharedPreferences  = getSharedPreferences(PREFNAME, MODE_PRIVATE)

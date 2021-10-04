@@ -362,22 +362,17 @@ class MainActivity : AppCompatActivity(), LocationListener{
         }
     }
 
-    private fun displayUserMenu(symbol : Symbol) : Boolean
+    private fun displayUserInfo(symbol : Symbol) : Boolean
     {
-        if(symbol == client.symbol)
-        {
-            displayMyMenu()
-        }
-        else {
-            var user = User(0)
+        var user = User(0)
 
-            for (u in users)
+        for (u in users)
+        {
+            if(symbol == u.symbol)
             {
-                if(symbol == u.symbol)
-                {
-                    user = u
-                }
+                user = u
             }
+        }
 
             val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             // Inflate a custom view using layout inflater
@@ -394,7 +389,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
             val popupWindow = PopupWindow(
                 view, // Custom view to show in popup window
                 LinearLayout.LayoutParams.MATCH_PARENT, // Width of popup window
-                LinearLayout.LayoutParams.WRAP_CONTENT// Window height
+                LinearLayout.LayoutParams.MATCH_PARENT// Window height
             )
 
             popupWindow.showAtLocation(
@@ -409,43 +404,53 @@ class MainActivity : AppCompatActivity(), LocationListener{
             button.setOnClickListener {
                 popupWindow.dismiss()
             }
-        }
         return true
     }
 
-    private fun displayMyMenu() : Boolean
+
+    private fun displayEventInfo(symbol : Symbol) : Boolean
     {
+        var event = Event(0)
+
+        for (e in events)
+        {
+            if(symbol == e.symbol)
+            {
+                event = e
+            }
+        }
+
         val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         // Inflate a custom view using layout inflater
-        val view = inflater.inflate(R.layout.custom_menu,mapView,false)
+        val view = inflater.inflate(R.layout.event_info, mapView, false)
+
+        val eventImageview : ImageView = view.findViewById(R.id.event_imageview)
+
+        val skinUrl = requestHandler.serverUrl + "events/" + event.type + ".png"
+        Glide.with(this)
+            .load(skinUrl)
+            .into(eventImageview)
 
         // Initialize a new instance of popup window
         val popupWindow = PopupWindow(
             view, // Custom view to show in popup window
             LinearLayout.LayoutParams.MATCH_PARENT, // Width of popup window
-            LinearLayout.LayoutParams.WRAP_CONTENT// Window height
+            LinearLayout.LayoutParams.MATCH_PARENT// Window height
         )
 
-        popupWindow.showAtLocation(mapView
-            ,
+        popupWindow.showAtLocation(
+            mapView,
             1,
-            0,0)
+            0, 0
+        )
 
-        val pseudoDisplay = view.findViewById<TextView>(R.id.user_info_pseudo)
-        pseudoDisplay.text = client.pseudo
-        val button= view.findViewById<Button>(R.id.user_info_quit)
-        val skinPreviewImageview : ImageView= view.findViewById(R.id.skin_preview_imageview)
-
-        val skinUrl = requestHandler.serverUrl + "skins/" + client.skin + ".png"
-        Glide.with(this)
-            .load(skinUrl)
-            .into(skinPreviewImageview)
-
+        val button = view.findViewById<Button>(R.id.event_quit)
         button.setOnClickListener {
             popupWindow.dismiss()
         }
         return true
     }
+
 
 
 /*
@@ -593,25 +598,11 @@ private fun handleLongClick( clickedPoint : LatLng)
                 updateClientSymbolLoop()
 
                 userSymbolManager.addClickListener { clickedSymbol ->
-                    Log.d("testSymbol", "user")
-                    displayUserMenu(clickedSymbol)
+                    displayUserInfo(clickedSymbol)
                 }
 
                 eventSymbolManager.addClickListener { clickedSymbol ->
-                    Log.d("testSymbol", "event")
-                    true
-                }
-
-                clientSymbolManager.addClickListener { clickedSymbol ->
-                    //  nothing yet
-                    Log.d("testSymbol", "client")
-                    true
-                }
-
-                flagSymbolManager.addClickListener { clickedSymbol ->
-                    //  nothing yet
-                    Log.d("testSymbol", "flag")
-                    true
+                    displayEventInfo(clickedSymbol)
                 }
                 //Activer le tracking de l'utilisateur et la balise de localisation
 

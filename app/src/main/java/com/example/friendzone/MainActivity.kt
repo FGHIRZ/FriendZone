@@ -505,8 +505,8 @@ private fun handleLongClick( clickedPoint : LatLng)
     {
         if(!flag.enabled)
         {
-            mapboxMap.uiSettings.isZoomGesturesEnabled = false
-            mapboxMap.uiSettings.isScrollGesturesEnabled = false
+//            mapboxMap.uiSettings.isZoomGesturesEnabled = false
+//            mapboxMap.uiSettings.isScrollGesturesEnabled = false
 
 
             val symbol = flagSymbolManager.create(

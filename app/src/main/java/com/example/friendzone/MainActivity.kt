@@ -526,7 +526,7 @@ private fun handleLongClick( clickedPoint : LatLng)
             flag.enabled = true
 
             centerOnFlag()
-            val eventMenu : RelativeLayout = findViewById(R.id.event_menu)
+            val eventMenu : LinearLayout = findViewById(R.id.event_menu)
             eventMenu.isVisible = true
 
             val cancelButton : Button = findViewById(R.id.cancel_button)
@@ -538,7 +538,7 @@ private fun handleLongClick( clickedPoint : LatLng)
 
     private fun cancelFlag()
     {
-        val eventMenu : RelativeLayout = findViewById(R.id.event_menu)
+        val eventMenu : LinearLayout = findViewById(R.id.event_menu)
         val cancelButton : Button = findViewById(R.id.cancel_button)
         eventMenu.isVisible = false
         cancelButton.isVisible = false

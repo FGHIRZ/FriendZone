@@ -43,6 +43,8 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
     private lateinit var userSymbolManager : SymbolManager
     private lateinit var eventSymbolManager : SymbolManager
+    private lateinit var flagSymbolManager : SymbolManager
+    private lateinit var clientSymbolManager : SymbolManager
 
     private var mapView: MapView? = null
     private lateinit var mapboxMap: MapboxMap
@@ -200,7 +202,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
         client.skin = new_skin!!
 
         client.symbol!!.iconImage = new_skin!!
-        userSymbolManager.update(client.symbol)
+        clientSymbolManager.update(client.symbol)
 
 
     }
@@ -508,7 +510,7 @@ private fun handleLongClick( clickedPoint : LatLng)
             mapboxMap.uiSettings.isZoomGesturesEnabled = false
             mapboxMap.uiSettings.isScrollGesturesEnabled = false
 
-            val symbol = userSymbolManager.create(
+            val symbol = flagSymbolManager.create(
                 SymbolOptions()
                     .withLatLng(clickedPoint)
                     .withIconImage("MeetGameFlag")
@@ -535,7 +537,7 @@ private fun handleLongClick( clickedPoint : LatLng)
         val cancelButton : Button = findViewById(R.id.cancel_button)
         eventMenu.isVisible = false
         cancelButton.isVisible = false
-        userSymbolManager.delete(flag.symbol)
+        flagSymbolManager.delete(flag.symbol)
         flag.enabled=false
         mapboxMap.uiSettings.isZoomGesturesEnabled = true
         mapboxMap.uiSettings.isScrollGesturesEnabled = true
@@ -563,6 +565,8 @@ private fun handleLongClick( clickedPoint : LatLng)
 
                 userSymbolManager = SymbolManager(mapView!!, mapboxMap, it)
                 eventSymbolManager = SymbolManager(mapView!!, mapboxMap, it)
+                flagSymbolManager = SymbolManager(mapView!!, mapboxMap, it)
+                clientSymbolManager = SymbolManager(mapView!!, mapboxMap, it)
 
                 userSymbolManager.iconAllowOverlap = true
                 userSymbolManager.iconIgnorePlacement = true
@@ -570,7 +574,13 @@ private fun handleLongClick( clickedPoint : LatLng)
                 eventSymbolManager.iconAllowOverlap = true
                 eventSymbolManager.iconIgnorePlacement = true
 
-                val symbol = userSymbolManager.create(
+                flagSymbolManager.iconAllowOverlap = true
+                flagSymbolManager.iconIgnorePlacement = true
+
+                clientSymbolManager.iconAllowOverlap = true
+                clientSymbolManager.iconIgnorePlacement = true
+
+                val symbol = clientSymbolManager.create(
                     SymbolOptions()
                         .withLatLng(LatLng(mapboxMap.locationComponent.lastKnownLocation!!.latitude, mapboxMap.locationComponent.lastKnownLocation!!.longitude))
                         .withIconImage(client.skin)
@@ -583,11 +593,24 @@ private fun handleLongClick( clickedPoint : LatLng)
                 updateClientSymbolLoop()
 
                 userSymbolManager.addClickListener { clickedSymbol ->
+                    Log.d("testSymbol", "user")
                     displayUserMenu(clickedSymbol)
                 }
 
                 eventSymbolManager.addClickListener { clickedSymbol ->
-                    Log.d("EVENTYOLO", "YES C COOL")
+                    Log.d("testSymbol", "event")
+                    true
+                }
+
+                clientSymbolManager.addClickListener { clickedSymbol ->
+                    //  nothing yet
+                    Log.d("testSymbol", "client")
+                    true
+                }
+
+                flagSymbolManager.addClickListener { clickedSymbol ->
+                    //  nothing yet
+                    Log.d("testSymbol", "flag")
                     true
                 }
                 //Activer le tracking de l'utilisateur et la balise de localisation

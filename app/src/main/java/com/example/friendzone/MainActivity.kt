@@ -256,7 +256,6 @@ class MainActivity : AppCompatActivity(), LocationListener{
         }
     }
 
-
     fun updateUserList(userList : JSONArray)
     {
         for(i in 0 until userList.length())

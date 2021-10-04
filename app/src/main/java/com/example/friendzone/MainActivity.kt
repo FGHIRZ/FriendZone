@@ -508,6 +508,7 @@ private fun handleLongClick( clickedPoint : LatLng)
             mapboxMap.uiSettings.isZoomGesturesEnabled = false
             mapboxMap.uiSettings.isScrollGesturesEnabled = false
 
+
             val symbol = flagSymbolManager.create(
                 SymbolOptions()
                     .withLatLng(clickedPoint)
@@ -517,6 +518,7 @@ private fun handleLongClick( clickedPoint : LatLng)
 
             flag.symbol = symbol
             flag.enabled = true
+            flag.symbol!!.isDraggable = true
 
             centerOnFlag()
             val eventMenu : LinearLayout = findViewById(R.id.event_menu)

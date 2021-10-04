@@ -118,6 +118,4 @@ class InfosPage : AppCompatActivity() {
          super.onDestroy()
     }
 
-
-
 }

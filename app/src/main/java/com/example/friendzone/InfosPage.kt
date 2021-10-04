@@ -34,6 +34,7 @@ class InfosPage : AppCompatActivity() {
         val sharedPreferences  = getSharedPreferences(PREFNAME, MODE_PRIVATE)
 
         ogSkin = sharedPreferences.getString("USER_SKIN", "default_skin")!!
+        newSkin = ogSkin
         val skinPreview : ImageView = findViewById(R.id.skin_preview_imageview)
 
         val skinListJSON = JSONObject(sharedPreferences.getString("SKINS_LIST", "{}"))
@@ -112,6 +113,7 @@ class InfosPage : AppCompatActivity() {
     {
         val sharedPreferences  = getSharedPreferences(PREFNAME, MODE_PRIVATE)
         val userId = sharedPreferences.getInt("USER_ID", 0)
+        Log.d("ProfilePage", ogSkin + " ,  " + newSkin)
         if (ogSkin != newSkin){
             requestHandler.requestSkinChange(newSkin,userId, this)
         }

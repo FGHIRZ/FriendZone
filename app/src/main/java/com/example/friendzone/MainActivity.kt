@@ -159,7 +159,6 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
     private fun openProfilePage()
     {
-        Log.d("TESTEST", "profile pag opened")
         val settingsIntent = Intent(this, InfosPage::class.java)
         profileLauncher.launch(settingsIntent)
     }
@@ -182,7 +181,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
         val new_skin = sharedPreferences.getString("USER_SKIN", "default_skin")
         val new_pseudo = sharedPreferences.getString("USER_PSEUDO", "dummy")
 
-        Log.d("TESTEST", new_skin!!)
+        Log.d("ProfilePage", "activity skin :" + new_skin!!)
         client.skin = new_skin!!
 
         client.symbol!!.iconImage = new_skin!!

@@ -5,6 +5,7 @@ import android.media.Image
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.util.Log
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -19,7 +20,8 @@ class InfosPage : AppCompatActivity() {
 
     private val requestHandler = RequestHandler()
 
-    private var skinSelected : String = ""
+    private var ogSkin = ""
+    private var newSkin = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,26 +29,31 @@ class InfosPage : AppCompatActivity() {
 
         requestHandler.initialize(this)
         val sharedPreferences  = getSharedPreferences(PREFNAME, MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        val skin = sharedPreferences.getString("USER_SKIN", "default_skin")
+
+        ogSkin = sharedPreferences.getString("USER_SKIN", "default_skin")!!
         val skinPreview : ImageView = findViewById(R.id.skin_preview_imageview)
 
         val skinListJSON = JSONObject(sharedPreferences.getString("SKINS_LIST", "{}"))
         val skinListArray = skinListJSON.getJSONArray("file_list")
         var index = 0
 
-        for(i in 0 until skinListArray.length())
+        Log.d("ProfilePage", skinListArray.toString())
+        Log.d("ProfilePage", "My skin : "  + ogSkin)
+
+        for(i in 0 until skinListArray.length()-1)
         {
-            if(skin == skinListArray[i])
+            if(ogSkin == skinListArray[i])
             {
                 index = i
+                Log.d("ProfilePage", "index found : " + index.toString())
+                Log.d("ProfilePage", skinListArray.getString(index))
             }
         }
 
         val pseudoTV : TextView = findViewById(R.id.pseudo_textview)
         val pseudoEdit : EditText = findViewById(R.id.pseudo_edittext)
         pseudoTV.text = sharedPreferences.getString("USER_PSEUDO", "pseudo")
-        val skinUrl = requestHandler.serverUrl + "skins/" + skin + ".png"
+        val skinUrl = requestHandler.serverUrl + "skins/" + ogSkin + ".png"
         Glide.with(this)
             .load(skinUrl)
             .into(skinPreview)
@@ -63,13 +70,14 @@ class InfosPage : AppCompatActivity() {
             {
                 index = index - 1
             }
-            val newSkin = skinListArray[index]
+            newSkin = skinListArray.getString(index)
+            Log.d("ProfilePage", skinListArray.getString(index))
+            Log.d("ProfilePage", index.toString())
             val skinUrl = requestHandler.serverUrl + "skins/" + newSkin + ".png"
             Glide.with(this)
                 .load(skinUrl)
                 .into(skinPreview)
-
-            skinSelected = newSkin.toString()
+            sharedPreferences.edit().putString("USER_SKIN", newSkin).apply()
         }
 
         rightArrow.setOnClickListener {
@@ -81,12 +89,12 @@ class InfosPage : AppCompatActivity() {
             {
                 index += 1
             }
-            val newSkin = skinListArray[index]
+            newSkin = skinListArray.getString(index)
             val skinUrl = requestHandler.serverUrl + "skins/" + newSkin + ".png"
             Glide.with(this)
                 .load(skinUrl)
                 .into(skinPreview)
-            skinSelected = newSkin.toString()
+            sharedPreferences.edit().putString("USER_SKIN", newSkin).apply()
         }
 
         val editPen : ImageView = findViewById(R.id.edit_pseudo)
@@ -94,23 +102,20 @@ class InfosPage : AppCompatActivity() {
             pseudoTV.isVisible = false
             pseudoEdit.isVisible = true
         }
-
-
-
     }
 
-     override fun onStop() {
-        super.onStop()
-
-        requestHandler.initialize(this)
+    private fun ApplyChanges()
+    {
         val sharedPreferences  = getSharedPreferences(PREFNAME, MODE_PRIVATE)
-        val skin = sharedPreferences.getString("USER_SKIN", "default_skin")
         val userId = sharedPreferences.getInt("USER_ID", 0)
-         sharedPreferences.edit().putString("USER_SKIN", skinSelected).commit()
-
-        if (skin != skinSelected){
-            requestHandler.requestSkinChange(skinSelected,userId, this)
+        if (ogSkin != newSkin){
+            requestHandler.requestSkinChange(newSkin,userId, this)
         }
+    }
+
+     override fun onDestroy() {
+         ApplyChanges()
+         super.onDestroy()
     }
 
 

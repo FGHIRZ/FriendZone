@@ -102,6 +102,8 @@ class InfosPage : AppCompatActivity() {
      override fun onStop() {
         super.onStop()
 
+         // un commentaire
+
         requestHandler.initialize(this)
         val sharedPreferences  = getSharedPreferences(PREFNAME, MODE_PRIVATE)
         val skin = sharedPreferences.getString("USER_SKIN", "default_skin")

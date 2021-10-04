@@ -233,7 +233,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
                     SymbolOptions()
                         .withLatLng(LatLng(newEvent.getDouble("lat"), newEvent.getDouble("lon")))
                         .withIconImage(newEvent.getString("type"))
-                        .withIconSize( 2.0f))
+                        .withIconSize( 1.0f))
 
                 val event = Event(newEvent.getInt("event_id"))
                 event.type=newEvent.getString("type")
@@ -653,7 +653,6 @@ private fun handleLongClick( clickedPoint : LatLng)
             img.setOnClickListener {
                 requestHandler.requestEventCreation(client.user_id, eventListArray[i] as String, flag.symbol!!.latLng, this )
                 val location = mapboxMap.locationComponent.lastKnownLocation!!
-
                 requestHandler.requestEventList(location,this)
                 cancelFlag()
             }

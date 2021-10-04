@@ -1,12 +1,14 @@
 package com.example.friendzone
 
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+
 
 class DeleteAccount : AppCompatActivity() {
 
@@ -50,7 +52,8 @@ class DeleteAccount : AppCompatActivity() {
 
         // go back to main activity
         val intent = Intent(this, Login::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        finishAffinity()
         startActivity(intent)
     }
 }

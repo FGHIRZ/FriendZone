@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.location.LocationListener
-import android.location.LocationManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -62,7 +61,6 @@ class MainActivity : AppCompatActivity(), LocationListener{
     private var PRIVATEMODE = 0
     private val PREFNAME = "friendzone-app"
 
-    private var locationManager: LocationManager? = null
 
     private val skinList = mutableListOf<String>()
 
@@ -95,12 +93,6 @@ class MainActivity : AppCompatActivity(), LocationListener{
         client.pseudo = sharedPreferences.getString("USER_PSEUDO", "ERROR")!!
 
         readSkinList()
-        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
-        locationManager!!.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER,
-            100,
-            10.0f, this
-        )
 
         //Initialisation de la mapbox & mise en page
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token))
@@ -250,7 +242,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
                     SymbolOptions()
                         .withLatLng(LatLng(newEvent.getDouble("lat"), newEvent.getDouble("lon")))
                         .withIconImage(newEvent.getString("event_type"))
-                        .withIconSize( 0.5f))
+                        .withIconSize( 0.3f))
 
                 val event = Event(newEvent.getInt("event_id"))
                 event.type=newEvent.getString("event_type")

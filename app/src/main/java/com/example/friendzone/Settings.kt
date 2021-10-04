@@ -63,7 +63,8 @@ class Settings : AppCompatActivity() {
         editor.apply()
 
         val intent = Intent(this, Login::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        finishAffinity()
         startActivity(intent)
     }
 }

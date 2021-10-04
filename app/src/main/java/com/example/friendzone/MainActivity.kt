@@ -72,6 +72,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
     private val profileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     {
         this.updateProfile()
+
     }
 
     @SuppressLint("MissingPermission", "ResourceAsColor")
@@ -186,6 +187,8 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
         client.symbol!!.iconImage = new_skin!!
         symbolManager.update(client.symbol)
+
+
     }
 //=========================================================
 
@@ -611,6 +614,7 @@ private fun handleLongClick( clickedPoint : LatLng)
 // Set the LocationComponent's render mode
             renderMode = RenderMode.NORMAL
 
+
         }
     }
 
@@ -648,6 +652,9 @@ private fun handleLongClick( clickedPoint : LatLng)
 
             img.setOnClickListener {
                 requestHandler.requestEventCreation(client.user_id, eventListArray[i] as String, flag.symbol!!.latLng, this )
+                val location = mapboxMap.locationComponent.lastKnownLocation!!
+
+                requestHandler.requestEventList(location,this)
                 cancelFlag()
             }
             val skinUrl = requestHandler.serverUrl + "events/" + eventListArray[i] + ".png"

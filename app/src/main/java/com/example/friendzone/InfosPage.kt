@@ -65,6 +65,7 @@ class InfosPage : AppCompatActivity() {
         val rightArrow : ImageView = findViewById(R.id.right_arrow)
 
         leftArrow.setOnClickListener {
+
             if(index==0)
             {
                 index=skinListArray.length()-1

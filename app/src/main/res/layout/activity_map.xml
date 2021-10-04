@@ -25,7 +25,8 @@
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
             android:layout_marginTop="100dp"
-            android:background="@drawable/settings_layout_bg">
+            android:background="@drawable/settings_layout_bg"
+    android:orientation="vertical">
         <Button
                 android:layout_width="32dp"
                 android:layout_height="32dp"
@@ -33,6 +34,15 @@
                 android:paddingTop="25dp"
                 android:background="@drawable/ic_settings_wheel"
                 android:id="@+id/settings_button"
+        />
+        <Button
+                android:layout_marginTop="10dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_horizontal"
+                android:paddingTop="25dp"
+                android:background="@drawable/ic_tracker"
+                android:id="@+id/center_view_button"
         />
     </LinearLayout>
 

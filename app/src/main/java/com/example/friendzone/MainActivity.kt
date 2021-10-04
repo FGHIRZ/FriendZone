@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import androidx.core.view.setMargins
 import com.bumptech.glide.Glide
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraPosition
@@ -40,7 +41,9 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
     private val requestHandler = RequestHandler()
 
-    private lateinit var symbolManager : SymbolManager
+    private lateinit var userSymbolManager : SymbolManager
+    private lateinit var eventSymbolManager : SymbolManager
+
     private var mapView: MapView? = null
     private lateinit var mapboxMap: MapboxMap
 
@@ -131,6 +134,17 @@ class MainActivity : AppCompatActivity(), LocationListener{
             cancelFlag()
         }
 
+        val centerButton : Button = findViewById(R.id.center_view_button)
+
+        centerButton.setOnClickListener {
+            val position = CameraPosition.Builder()
+                .target(client.symbol!!.latLng)
+                .zoom(16.0)
+                .build()
+
+            mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position), 500);
+        }
+
         dropDownArrow.setOnClickListener {
 
             if(eventMenuExpanded)
@@ -186,7 +200,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
         client.skin = new_skin!!
 
         client.symbol!!.iconImage = new_skin!!
-        symbolManager.update(client.symbol)
+        userSymbolManager.update(client.symbol)
 
 
     }
@@ -229,11 +243,11 @@ class MainActivity : AppCompatActivity(), LocationListener{
             //if not, create a new user
             if(!eventFound)
             {
-                val symbol = symbolManager.create(
+                val symbol = eventSymbolManager.create(
                     SymbolOptions()
                         .withLatLng(LatLng(newEvent.getDouble("lat"), newEvent.getDouble("lon")))
                         .withIconImage(newEvent.getString("type"))
-                        .withIconSize( 1.0f))
+                        .withIconSize( 0.5f))
 
                 val event = Event(newEvent.getInt("event_id"))
                 event.type=newEvent.getString("type")
@@ -247,13 +261,13 @@ class MainActivity : AppCompatActivity(), LocationListener{
         {
             if(!event.match)
             {
-                symbolManager.delete(event.symbol)
+                eventSymbolManager.delete(event.symbol)
                 @Suppress("TYPE_INFERENCE_ONLY_INPUT_TYPES_WARNING")
                 users.remove(event)
             }
             else
             {
-                symbolManager.update(event.symbol)
+                eventSymbolManager.update(event.symbol)
                 event.match=false
             }
         }
@@ -283,7 +297,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
             //if not, create a new user
             if(!userFound)
             {
-                val symbol = symbolManager.create(
+                val symbol = userSymbolManager.create(
                     SymbolOptions()
                         .withLatLng(LatLng(newUser.getDouble("lat"), newUser.getDouble("lon")))
                         .withIconImage(newUser.getString("skin"))
@@ -303,12 +317,12 @@ class MainActivity : AppCompatActivity(), LocationListener{
         {
             if(!user.match)
             {
-                symbolManager.delete(user.symbol)
+                userSymbolManager.delete(user.symbol)
                 users.remove(user)
             }
             else
             {
-                symbolManager.update(user.symbol)
+                userSymbolManager.update(user.symbol)
                 user.match=false
             }
         }
@@ -318,7 +332,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
     {
         for(user in users)
         {
-            symbolManager.delete(user.symbol)
+            userSymbolManager.delete(user.symbol)
             users.remove(user)
         }
     }
@@ -494,7 +508,7 @@ private fun handleLongClick( clickedPoint : LatLng)
             mapboxMap.uiSettings.isZoomGesturesEnabled = false
             mapboxMap.uiSettings.isScrollGesturesEnabled = false
 
-            val symbol = symbolManager.create(
+            val symbol = userSymbolManager.create(
                 SymbolOptions()
                     .withLatLng(clickedPoint)
                     .withIconImage("MeetGameFlag")
@@ -521,7 +535,7 @@ private fun handleLongClick( clickedPoint : LatLng)
         val cancelButton : Button = findViewById(R.id.cancel_button)
         eventMenu.isVisible = false
         cancelButton.isVisible = false
-        symbolManager.delete(flag.symbol)
+        userSymbolManager.delete(flag.symbol)
         flag.enabled=false
         mapboxMap.uiSettings.isZoomGesturesEnabled = true
         mapboxMap.uiSettings.isScrollGesturesEnabled = true
@@ -547,11 +561,16 @@ private fun handleLongClick( clickedPoint : LatLng)
 
                 enableLocationComponent(it)
 
-                symbolManager = SymbolManager(mapView!!, mapboxMap, it)
-                symbolManager.iconAllowOverlap = true
-                symbolManager.iconIgnorePlacement = true
+                userSymbolManager = SymbolManager(mapView!!, mapboxMap, it)
+                eventSymbolManager = SymbolManager(mapView!!, mapboxMap, it)
 
-                val symbol = symbolManager.create(
+                userSymbolManager.iconAllowOverlap = true
+                userSymbolManager.iconIgnorePlacement = true
+
+                eventSymbolManager.iconAllowOverlap = true
+                eventSymbolManager.iconIgnorePlacement = true
+
+                val symbol = userSymbolManager.create(
                     SymbolOptions()
                         .withLatLng(LatLng(mapboxMap.locationComponent.lastKnownLocation!!.latitude, mapboxMap.locationComponent.lastKnownLocation!!.longitude))
                         .withIconImage(client.skin)
@@ -561,10 +580,15 @@ private fun handleLongClick( clickedPoint : LatLng)
 
                 client.symbol = symbol
 
-                updateUserSymbolLoop()
+                updateClientSymbolLoop()
 
-                symbolManager.addClickListener { clickedSymbol ->
+                userSymbolManager.addClickListener { clickedSymbol ->
                     displayUserMenu(clickedSymbol)
+                }
+
+                eventSymbolManager.addClickListener { clickedSymbol ->
+                    Log.d("EVENTYOLO", "YES C COOL")
+                    true
                 }
                 //Activer le tracking de l'utilisateur et la balise de localisation
 
@@ -618,15 +642,15 @@ private fun handleLongClick( clickedPoint : LatLng)
         }
     }
 
-    private fun updateUserSymbolLoop(){
+    private fun updateClientSymbolLoop(){
         val location = mapboxMap.locationComponent.lastKnownLocation!!
         if(client!=null && location!=null)
         {
             client.symbol!!.latLng=LatLng(location.latitude, location.longitude)
-            symbolManager.update(client.symbol)
+            userSymbolManager.update(client.symbol)
         }
         Handler(Looper.getMainLooper()).postDelayed({
-            updateUserSymbolLoop()
+            updateClientSymbolLoop()
 
         }, 100)
     }
@@ -646,8 +670,11 @@ private fun handleLongClick( clickedPoint : LatLng)
         {
             Log.d("EVENT LIST (MAP)", "adding icon")
             val img = ImageView(this)
-            img.layoutParams = LinearLayout.LayoutParams(100, 100)
+            img.layoutParams=LinearLayout.LayoutParams(150,150)
             img.id = View.generateViewId()
+            var lp = LinearLayout.LayoutParams(img.layoutParams)
+            lp.setMargins(10)
+            img.layoutParams = lp
             layout.addView(img)
 
             img.setOnClickListener {

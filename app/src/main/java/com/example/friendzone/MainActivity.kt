@@ -200,6 +200,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
         Log.d("ProfilePage", "activity skin :" + new_skin!!)
         client.skin = new_skin!!
+        client.pseudo = new_pseudo!!
 
         client.symbol!!.iconImage = new_skin!!
         clientSymbolManager.update(client.symbol)

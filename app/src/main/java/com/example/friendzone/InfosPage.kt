@@ -1,18 +1,19 @@
 package com.example.friendzone
 
-import android.content.SharedPreferences
-import android.media.Image
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Context
+import android.graphics.Bitmap
 import android.os.Bundle
-import android.provider.ContactsContract
+import android.text.Editable
 import android.util.Log
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import org.json.JSONArray
 import org.json.JSONObject
+
 
 class InfosPage : AppCompatActivity() {
 
@@ -24,7 +25,11 @@ class InfosPage : AppCompatActivity() {
     private var ogSkin = ""
     private var newSkin = ""
 
+    private var pseudo = ""
+
     private var skinListArray = JSONArray()
+
+    private var editing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +43,8 @@ class InfosPage : AppCompatActivity() {
         val skinPreview : ImageView = findViewById(R.id.skin_preview_imageview)
 
         val skinListJSON = JSONObject(sharedPreferences.getString("SKINS_LIST", "{}"))
+        val userId = sharedPreferences.getInt("USER_ID", 0)
+
         skinListArray = skinListJSON.getJSONArray("file_list")
         var index = 0
 
@@ -56,7 +63,9 @@ class InfosPage : AppCompatActivity() {
 
         val pseudoTV : TextView = findViewById(R.id.pseudo_textview)
         val pseudoEdit : EditText = findViewById(R.id.pseudo_edittext)
-        pseudoTV.text = sharedPreferences.getString("USER_PSEUDO", "pseudo")
+        pseudo = sharedPreferences.getString("USER_PSEUDO", "pseudo")!!
+        pseudoTV.text = pseudo
+
         val skinUrl = requestHandler.serverUrl + "skins/" + ogSkin + ".png"
         Glide.with(this)
             .load(skinUrl)
@@ -91,9 +100,28 @@ class InfosPage : AppCompatActivity() {
         }
 
         val editPen : ImageView = findViewById(R.id.edit_pseudo)
+        editPen.setImageResource(R.drawable.edit_icon)
         editPen.setOnClickListener {
-            pseudoTV.isVisible = false
-            pseudoEdit.isVisible = true
+            if(!editing)
+            {
+                pseudoTV.isVisible = false
+                pseudoEdit.isVisible = true
+                pseudoEdit.setText(pseudo)
+                editPen.setImageResource(R.drawable.validate)
+                editing = true
+            }
+            else
+            {
+                pseudoTV.isVisible = true
+                pseudoEdit.isVisible = false
+                pseudo = pseudoEdit.text.toString()
+                pseudoTV.text = pseudo
+                editPen.setImageResource(R.drawable.edit_icon )
+                editing = false
+
+                requestHandler.requestPseudoChange(pseudo, userId, this)
+                sharedPreferences.edit().putString("USER_PSEUDO", pseudo).commit()
+            }
         }
     }
 

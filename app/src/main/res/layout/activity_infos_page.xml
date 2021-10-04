@@ -52,6 +52,7 @@
                 android:text="PSEUDO"
                 android:textColor="@color/white"
                 android:id="@+id/pseudo_textview"
+                android:textSize="15dp"
         />
 
         <EditText
@@ -60,13 +61,14 @@
                 android:text="PSEUDO"
                 android:textColor="@color/white"
                 android:id="@+id/pseudo_edittext"
-                android:visibility="gone"/>
+                android:visibility="gone"
+                android:layout_weight="1"
+                android:textSize="15dp"/>
 
         <ImageView
                 android:id="@+id/edit_pseudo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/edit_icon"
                 android:layout_marginLeft="10dp"
         />
 

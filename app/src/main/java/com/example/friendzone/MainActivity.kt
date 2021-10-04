@@ -249,11 +249,11 @@ class MainActivity : AppCompatActivity(), LocationListener{
                 val symbol = eventSymbolManager.create(
                     SymbolOptions()
                         .withLatLng(LatLng(newEvent.getDouble("lat"), newEvent.getDouble("lon")))
-                        .withIconImage(newEvent.getString("type"))
+                        .withIconImage(newEvent.getString("event_type"))
                         .withIconSize( 0.5f))
 
                 val event = Event(newEvent.getInt("event_id"))
-                event.type=newEvent.getString("type")
+                event.type=newEvent.getString("event_type")
                 event.symbol=symbol
                 event.match= true
                 events.add(event)
@@ -289,8 +289,8 @@ class MainActivity : AppCompatActivity(), LocationListener{
                 if(user.user_id==newUser.getInt("user_id"))
                 {
                     user.symbol!!.latLng = LatLng(newUser.getDouble("lat"), newUser.getDouble("lon"))
-                    user.skin=newUser.getString("skin")
-                    user.pseudo = newUser.getString("pseudo")
+                    user.skin=newUser.getString("user_skin")
+                    user.pseudo = newUser.getString("user_pseudo")
                     user.symbol!!.iconImage=user.skin
                     userFound = true
                     user.match = true
@@ -303,13 +303,13 @@ class MainActivity : AppCompatActivity(), LocationListener{
                 val symbol = userSymbolManager.create(
                     SymbolOptions()
                         .withLatLng(LatLng(newUser.getDouble("lat"), newUser.getDouble("lon")))
-                        .withIconImage(newUser.getString("skin"))
+                        .withIconImage(newUser.getString("user_skin"))
                         .withIconSize( 1.0f)
                         .withIconOpacity(1.0f))
 
                 val user = User(newUser.getInt("user_id"))
 
-                user.pseudo = newUser.getString("pseudo")
+                user.pseudo = newUser.getString("user_pseudo")
                 user.symbol=symbol
                 user.match= true
                 users.add(user)

@@ -27,6 +27,34 @@ class RequestHandler {
         queue = Volley.newRequestQueue(context)
     }
 
+    fun requestAccountCreation(username: String, password: String, activity: Activity)
+    {
+        val json = JSONObject()
+        val userJSON= JSONObject()
+        userJSON.put("username", username)
+        userJSON.put("password", md5(password))
+        json.put("request", "create_account")
+        json.put("params", userJSON)
+
+        val createAccountRequest= JsonObjectRequest(Request.Method.POST, serverUrl, json, { response->
+            Log.d("requestHandler", response.toString())
+            if(response.getString("status") == "ok")
+            {
+                (activity as AccountCreation).success()
+            }
+            else
+            {
+                Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
+            }
+        }, {
+        })
+        createAccountRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+
+        queue.add(createAccountRequest)
+    }
 
     fun requestLogin(username: String, password: String, activity : Activity) {
 
@@ -45,8 +73,8 @@ class RequestHandler {
                     Toast.makeText(activity, "You have been rickrolled", Toast.LENGTH_LONG).show()
 
                     val userId = response.getJSONObject("params").getInt("user_id")
-                    val skin = response.getJSONObject("params").getString("skin")
-                    val pseudo = response.getJSONObject("params").getString("pseudo")
+                    val skin = response.getJSONObject("params").getString("user_skin")
+                    val pseudo = response.getJSONObject("params").getString("user_pseudo")
 
                     val user = User(userId)
                     user.username = username
@@ -86,8 +114,8 @@ class RequestHandler {
                     Toast.makeText(activity, "Welcome", Toast.LENGTH_LONG).show()
 
                     val user = User(response.getJSONObject("params").getInt("user_id"))
-                    user.skin = response.getJSONObject("params").getString("skin")
-                    user.pseudo = response.getJSONObject("params").getString("pseudo")
+                    user.skin = response.getJSONObject("params").getString("user_skin")
+                    user.pseudo = response.getJSONObject("params").getString("user_pseudo")
                     (activity as Login).startMapActivity(user)
                 }
                 else
@@ -105,35 +133,6 @@ class RequestHandler {
         queue.add(jsonObjectRequest)
     }
 
-    fun requestAccountCreation(username: String, password: String, activity: Activity)
-    {
-        val json = JSONObject()
-        val userJSON= JSONObject()
-        userJSON.put("username", username)
-        userJSON.put("password", md5(password))
-        json.put("request", "create_account")
-        json.put("params", userJSON)
-
-        val createAccountRequest= JsonObjectRequest(Request.Method.POST, serverUrl, json, { response->
-            Log.d("requestHandler", response.toString())
-            if(response.getString("status") == "ok")
-            {
-                (activity as AccountCreation).success()
-            }
-            else
-            {
-                Toast.makeText(activity, response.getJSONObject("params").getString("description"), Toast.LENGTH_LONG).show()
-            }
-        }, {
-        })
-        createAccountRequest.retryPolicy = DefaultRetryPolicy(
-            4000,
-            1,
-            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-
-        queue.add(createAccountRequest)
-    }
-
 
 
     fun requestUserList(location : Location, user : User, visibile : Boolean, activity: Activity){
@@ -146,7 +145,7 @@ class RequestHandler {
         locationJSON.put("lon", location.longitude)
         val userJSON = JSONObject()
         userJSON.put("user_id", user.user_id)
-        userJSON.put("location", locationJSON)
+        userJSON.put("user_location", locationJSON)
         userJSON.put("visible", visibile)
         json.put("request", "get_user_list")
         json.put("params",userJSON)
@@ -171,7 +170,7 @@ class RequestHandler {
         locationJSON.put("lat", location.latitude)
         locationJSON.put("lon", location.longitude)
         val userJSON = JSONObject()
-        userJSON.put("location", locationJSON)
+        userJSON.put("user_location", locationJSON)
         json.put("request", "get_event_list")
         json.put("params",userJSON)
 
@@ -195,9 +194,9 @@ class RequestHandler {
         val locationJSON = JSONObject()
         locationJSON.put("lat", location.latitude)
         locationJSON.put("lon", location.longitude)
-        paramsJSON.put("location", locationJSON)
+        paramsJSON.put("event_location", locationJSON)
         paramsJSON.put("user_id", user_id)
-        paramsJSON.put("type", type)
+        paramsJSON.put("event_type", type)
 
         requestJSON.put("params", paramsJSON)
 

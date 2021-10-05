@@ -552,8 +552,9 @@ private fun handleLongClick( clickedPoint : LatLng)
 
     //Récupère la map sur mapbox studio
     private fun loadMap() {
-
+        mapView?.invalidate()
         mapView?.getMapAsync { mapboxMap ->
+
 
             //Lorsque la map est chargée, on éxecute ce code
             mapboxMap.setStyle(Style.Builder().fromUri(resources.getString(R.string.mapbox_style_url))) { it ->

@@ -5,7 +5,7 @@
     <string name="mapbox_access_token">
         pk.eyJ1IjoibWVldGdhbWVwcm9qZWN0IiwiYSI6ImNrdDhwdGZydTE0bHQycG83Nnh5dTRtZzkifQ.PrR9ZjvLjRT_7D0WkjsCIQ
     </string>
-    <string name="mapbox_style_url">mapbox://styles/meetgameproject/ckt8pxo7y28vs19v1qlyjrk8v</string>
+    <string name="mapbox_style_url">mapbox://styles/meetgameproject/ckt8pxo7y28vs19v1qlyjrk8v?fresh=true</string>
     <string name="user_location_permission_explanation">yoyo</string>
     <string name="user_location_permission_not_granted">oh no</string>
     <string name="preference_file_key">"com.FriendZone.PREFERENCE_FILE_KEY"</string>

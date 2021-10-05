@@ -552,7 +552,7 @@ private fun handleLongClick( clickedPoint : LatLng)
 
     //Récupère la map sur mapbox studio
     private fun loadMap() {
-        mapView?.invalidate()
+
         mapView?.getMapAsync { mapboxMap ->
 
 

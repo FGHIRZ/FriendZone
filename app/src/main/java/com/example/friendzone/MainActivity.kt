@@ -257,8 +257,7 @@ class MainActivity : AppCompatActivity(), LocationListener{
             if(!event.match)
             {
                 eventSymbolManager.delete(event.symbol)
-                @Suppress("TYPE_INFERENCE_ONLY_INPUT_TYPES_WARNING")
-                users.remove(event)
+                events.remove(event)
             }
             else
             {

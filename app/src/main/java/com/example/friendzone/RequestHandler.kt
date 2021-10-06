@@ -6,10 +6,7 @@ import android.content.SharedPreferences
 import android.location.Location
 import android.util.Log
 import android.widget.Toast
-import com.android.volley.DefaultRetryPolicy
-import com.android.volley.Request
-import com.android.volley.RequestQueue
-import com.android.volley.Response
+import com.android.volley.*
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
@@ -22,6 +19,8 @@ class RequestHandler {
 
     private lateinit var queue: RequestQueue
     val serverUrl = "http://82.165.223.209:8080/"
+
+    var accessToken = ""
 
     fun initialize(context: Context) {
         queue = Volley.newRequestQueue(context)
@@ -65,22 +64,16 @@ class RequestHandler {
         jsonRequest.put("request", "login")
         jsonRequest.put("params", userJson)
 
+        val requestUrl = serverUrl + "login"
+
         val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.POST, serverUrl, jsonRequest,
+            Request.Method.POST, requestUrl, jsonRequest,
             { response ->
                 Log.d("requestHandler", response.toString())
                 if((response.get("status") as String) == "ok") {
-                    Toast.makeText(activity, "You have been rickrolled", Toast.LENGTH_LONG).show()
-
                     val userId = response.getJSONObject("params").getInt("user_id")
-                    val skin = response.getJSONObject("params").getString("user_skin")
-                    val pseudo = response.getJSONObject("params").getString("user_pseudo")
-
-                    val user = User(userId)
-                    user.username = username
-                    user.skin = skin
-                    user.pseudo = pseudo
-                    (activity as Login).startMapActivity(user)
+                    val access_token = response.getJSONObject("params").getString("access_token")
+                    (activity as Login).loginSuccess(userId, access_token)
                 }
                 else
                 {
@@ -95,6 +88,55 @@ class RequestHandler {
             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
         )
         queue.add(jsonObjectRequest)
+    }
+
+    fun requestClientInfos(userId : Int, activity : Activity)
+    {
+        val jsonRequest = JSONObject()
+        val userJson = JSONObject()
+        userJson.put("user_id", userId)
+        jsonRequest.put("request", "get_my_infos")
+        jsonRequest.put("params", userJson)
+
+        val requestURL = serverUrl + "app"
+
+        val accessTokenRequest : JsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, requestURL, jsonRequest,
+            { response ->
+                if((response.get("status") as String) == "ok") {
+                    Toast.makeText(activity, "You have been rickrolled", Toast.LENGTH_LONG).show()
+
+                    val userId = response.getJSONObject("params").getInt("user_id")
+                    val skin = response.getJSONObject("params").getString("user_skin")
+                    val pseudo = response.getJSONObject("params").getString("user_pseudo")
+                    val access_token = response.getJSONObject("params").getString("access_token")
+                    val user = User(userId)
+                    user.skin = skin
+                    user.pseudo = pseudo
+                    (activity as Login).startMapActivity(user)
+                }
+                else
+                {
+                    (activity as Login).loginError()
+                    Toast.makeText(activity, ((response.get("params") as JSONObject).get("description") as String), Toast.LENGTH_SHORT).show()
+                }
+            }, { }) {
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                var params: MutableMap<String, String>? = super.getHeaders()
+                if (params == null) params = HashMap()
+                params["Authorization"] = accessToken
+                return params
+            }
+        }
+
+        accessTokenRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        )
+        accessTokenRequest
+        queue.add(accessTokenRequest)
     }
 
     fun requestAutoLogin(username: String, password: String, activity : Activity) {

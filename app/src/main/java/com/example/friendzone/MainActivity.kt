@@ -588,6 +588,7 @@ private fun handleLongClick( clickedPoint : LatLng)
                         .withIconOpacity(1.0f))
 
 
+
                 client.symbol = symbol
 
                 updateClientSymbolLoop()

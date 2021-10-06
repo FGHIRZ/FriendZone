@@ -53,7 +53,7 @@ class Login : AppCompatActivity(), PermissionsListener{
     {
         val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
         var autoLogin = sharedPref.getBoolean("AUTO_LOGIN", false)
-        if(autoLogin)
+        if(false)
         {
             autoLogin()
         }
@@ -116,6 +116,21 @@ class Login : AppCompatActivity(), PermissionsListener{
         val intent = Intent(this, CacheActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    fun loginSuccess(userId : Int, accessToken : String)
+    {
+        val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        val editor = sharedPref.edit()
+
+        editor.putInt("USER_ID", userId)
+        editor.putString("ACCESS_TOKEN", accessToken)
+        editor.apply()
+
+        requestHandler.accessToken = accessToken
+        requestHandler.requestClientInfos(userId, this)
+
+
     }
 
     fun loginError()

@@ -19,6 +19,7 @@ class Login : AppCompatActivity(), PermissionsListener{
 
 
     var permissionsManager: PermissionsManager = PermissionsManager(this)
+    var rememberme = true
 
 
     private val requestHandler : RequestHandler = RequestHandler()
@@ -52,9 +53,10 @@ class Login : AppCompatActivity(), PermissionsListener{
     private fun showLoginPage()
     {
         val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
-        var autoLogin = sharedPref.getBoolean("AUTO_LOGIN", false)
-        if(false)
+        val accessToken = sharedPref.getString("ACCESS_TOKEN", "null")
+        if(accessToken != "null")
         {
+            requestHandler.accessToken = accessToken!!
             autoLogin()
         }
         else
@@ -68,39 +70,28 @@ class Login : AppCompatActivity(), PermissionsListener{
             val createAccount : TextView = findViewById(R.id.create_account)
             val editor = sharedPref.edit()
 
-
-            rememberMe.isChecked= sharedPref.getBoolean("AUTO_LOGIN", true)
+            rememberMe.isChecked= true
 
             rememberMe.setOnCheckedChangeListener { _, isChecked ->
-                editor.putBoolean("AUTO_LOGIN", isChecked)
-                editor.apply()
+                rememberMe.isChecked = isChecked
             }
 
             loginButton.setOnClickListener {
                 requestHandler.requestLogin(username.text.toString(), password.text.toString(), this)
-
-                autoLogin = rememberMe.isChecked
-
-                if(autoLogin)
-                {
-                    editor.putBoolean("AUTO_LOGIN", autoLogin)
-                    editor.putString("USER_USERNAME", username.text.toString())
-                    editor.putString("USER_PASSWORD", requestHandler.md5(password.text.toString()))
-                    editor.apply()
-                }
             }
             createAccount.setOnClickListener {
                 showCreateAccountPage()
             }
         }
     }
+
     private fun autoLogin()
     {
         val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
 
-        val uname : String? = sharedPref.getString("USER_USERNAME", "")
-        val pass : String? = sharedPref.getString("USER_PASSWORD", "")
-        requestHandler.requestAutoLogin(uname!!, pass!!, this)
+        val accessToken = sharedPref.getString("ACCESS_TOKEN", "none")
+        val userId = sharedPref.getInt("USER_ID", 0)
+        requestHandler.requestClientInfo(userId, this)
     }
 
     fun startMapActivity(user : User)
@@ -123,14 +114,15 @@ class Login : AppCompatActivity(), PermissionsListener{
         val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
         val editor = sharedPref.edit()
 
-        editor.putInt("USER_ID", userId)
-        editor.putString("ACCESS_TOKEN", accessToken)
-        editor.apply()
+        if(rememberme)
+        {
+            editor.putInt("USER_ID", userId)
+            editor.putString("ACCESS_TOKEN", accessToken)
+            editor.apply()
+        }
 
         requestHandler.accessToken = accessToken
-        requestHandler.requestClientInfos(userId, this)
-
-
+        requestHandler.requestClientInfo(userId, this)
     }
 
     fun loginError()

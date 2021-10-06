@@ -2,11 +2,13 @@ package com.example.friendzone
 
 import android.app.Activity
 import android.content.Context
-import android.content.SharedPreferences
 import android.location.Location
 import android.util.Log
 import android.widget.Toast
-import com.android.volley.*
+import com.android.volley.AuthFailureError
+import com.android.volley.DefaultRetryPolicy
+import com.android.volley.Request
+import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
@@ -90,12 +92,12 @@ class RequestHandler {
         queue.add(jsonObjectRequest)
     }
 
-    fun requestClientInfos(userId : Int, activity : Activity)
+    fun requestClientInfo(userId : Int, activity : Activity)
     {
         val jsonRequest = JSONObject()
         val userJson = JSONObject()
         userJson.put("user_id", userId)
-        jsonRequest.put("request", "get_my_infos")
+        jsonRequest.put("request", "get_my_info")
         jsonRequest.put("params", userJson)
 
         val requestURL = serverUrl + "app"
@@ -103,13 +105,13 @@ class RequestHandler {
         val accessTokenRequest : JsonObjectRequest = object : JsonObjectRequest(
             Method.POST, requestURL, jsonRequest,
             { response ->
+                Log.d("JWT", response.toString())
                 if((response.get("status") as String) == "ok") {
                     Toast.makeText(activity, "You have been rickrolled", Toast.LENGTH_LONG).show()
 
                     val userId = response.getJSONObject("params").getInt("user_id")
                     val skin = response.getJSONObject("params").getString("user_skin")
                     val pseudo = response.getJSONObject("params").getString("user_pseudo")
-                    val access_token = response.getJSONObject("params").getString("access_token")
                     val user = User(userId)
                     user.skin = skin
                     user.pseudo = pseudo
@@ -123,9 +125,8 @@ class RequestHandler {
             }, { }) {
             @Throws(AuthFailureError::class)
             override fun getHeaders(): Map<String, String> {
-                var params: MutableMap<String, String>? = super.getHeaders()
-                if (params == null) params = HashMap()
-                params["Authorization"] = accessToken
+                var params = HashMap(super.getHeaders())
+                params.put("Authorization", "Bearer " + accessToken)
                 return params
             }
         }
@@ -138,43 +139,6 @@ class RequestHandler {
         accessTokenRequest
         queue.add(accessTokenRequest)
     }
-
-    fun requestAutoLogin(username: String, password: String, activity : Activity) {
-
-        val jsonRequest = JSONObject()
-        val userJson = JSONObject()
-        userJson.put("username", username)
-        userJson.put("password", password)
-        jsonRequest.put("request", "login")
-        jsonRequest.put("params", userJson)
-
-        val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.POST, serverUrl, jsonRequest,
-            { response ->
-                Log.d("requestHandler", response.toString())
-                if((response.get("status") as String) == "ok") {
-                    Toast.makeText(activity, "Welcome", Toast.LENGTH_LONG).show()
-
-                    val user = User(response.getJSONObject("params").getInt("user_id"))
-                    user.skin = response.getJSONObject("params").getString("user_skin")
-                    user.pseudo = response.getJSONObject("params").getString("user_pseudo")
-                    (activity as Login).startMapActivity(user)
-                }
-                else
-                {
-                    (activity as Login).loginError()
-                    Toast.makeText(activity, ((response.get("params") as JSONObject).get("description") as String), Toast.LENGTH_SHORT).show()
-                }
-            },
-            { })
-        jsonObjectRequest.retryPolicy = DefaultRetryPolicy(
-            4000,
-            1,
-            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-        )
-        queue.add(jsonObjectRequest)
-    }
-
 
 
     fun requestUserList(location : Location, user : User, visibile : Boolean, activity: Activity){
@@ -192,15 +156,30 @@ class RequestHandler {
         json.put("request", "get_user_list")
         json.put("params",userJSON)
 
-        val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.POST, serverUrl, json,
+        val requestURL = serverUrl + "app"
+
+        val accessTokenRequest : JsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, requestURL, json,
             { response ->
                 Log.d("requestPage", response.toString())
                 val userList = response.getJSONObject("params").getJSONArray("user_list")
                 (activity as MainActivity).updateUserList(userList)
-            },
-            { })
-        queue.add(jsonObjectRequest)
+            }, { }) {
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                var params = HashMap(super.getHeaders())
+                params.put("Authorization", "Bearer " + accessToken)
+                return params
+            }
+        }
+
+        accessTokenRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+
+
+        queue.add(accessTokenRequest)
     }
 
     fun requestEventList(location : Location, activity: Activity){
@@ -216,21 +195,36 @@ class RequestHandler {
         json.put("request", "get_event_list")
         json.put("params",userJSON)
 
-        val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.POST, serverUrl, json,
+        val requestURL = serverUrl + "app"
+
+        val accessTokenRequest : JsonObjectRequest = object : JsonObjectRequest(
+            Request.Method.POST, requestURL, json,
             { response ->
                 Log.d("requestPage", response.toString())
                 val eventList = response.getJSONObject("params").getJSONArray("event_list")
                 (activity as MainActivity).updateEventList(eventList)
             },
-            { })
-        queue.add(jsonObjectRequest)
+            { }) {
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                var params = HashMap(super.getHeaders())
+                params.put("Authorization", "Bearer " + accessToken)
+                return params
+            }
+        }
+        accessTokenRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+
+
+        queue.add(accessTokenRequest)
     }
 
     fun requestEventCreation(user_id : Int, type: String, location: LatLng, activity: Activity)
     {
-        val requestJSON = JSONObject()
-        requestJSON.put("request", "create_event")
+        val json = JSONObject()
+        json.put("request", "create_event")
 
         val paramsJSON= JSONObject()
         val locationJSON = JSONObject()
@@ -240,12 +234,14 @@ class RequestHandler {
         paramsJSON.put("user_id", user_id)
         paramsJSON.put("event_type", type)
 
-        requestJSON.put("params", paramsJSON)
+        json.put("params", paramsJSON)
 
 
-        Log.d("request", requestJSON.toString())
+        val requestURL = serverUrl + "app"
 
-        val createEventRequest= JsonObjectRequest(Request.Method.POST, serverUrl, requestJSON, { response->
+        val accessTokenRequest : JsonObjectRequest = object : JsonObjectRequest(
+            Request.Method.POST, requestURL, json,
+            { response->
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
@@ -257,12 +253,21 @@ class RequestHandler {
             }
         }, {
         })
-        createEventRequest.retryPolicy = DefaultRetryPolicy(
+        {
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                var params = HashMap(super.getHeaders())
+                params.put("Authorization", "Bearer " + accessToken)
+                return params
+            }
+        }
+
+        accessTokenRequest.retryPolicy = DefaultRetryPolicy(
             4000,
             1,
             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
 
-        queue.add(createEventRequest)
+        queue.add(accessTokenRequest)
     }
 
 
@@ -275,7 +280,9 @@ class RequestHandler {
         json.put("request", "change_username")
         json.put("params", userJSON)
 
-        val changeUsernameRequest = JsonObjectRequest(Request.Method.POST, serverUrl, json, { response->
+        val requestURL = serverUrl + "manage_account"
+
+        val changeUsernameRequest = JsonObjectRequest(Request.Method.POST, requestURL, json, { response->
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
@@ -307,7 +314,9 @@ class RequestHandler {
         json.put("request", "change_password")
         json.put("params", userJSON)
 
-        val changePasswordRequest= JsonObjectRequest(Request.Method.POST, serverUrl, json, { response->
+        val requestURL = serverUrl + "manage_account"
+
+        val changePasswordRequest= JsonObjectRequest(Request.Method.POST, requestURL, json, { response->
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
@@ -336,7 +345,8 @@ class RequestHandler {
         json.put("request", "delete_account")
         json.put("params", userJSON)
 
-        val deleteAccountRequest = JsonObjectRequest(Request.Method.POST, serverUrl, json, { response->
+        val requestURL = serverUrl + "manage_account"
+        val deleteAccountRequest = JsonObjectRequest(Request.Method.POST, requestURL, json, { response->
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
@@ -365,7 +375,8 @@ class RequestHandler {
         json.put("request", "change_pseudo")
         json.put("params", userJSON)
 
-        val changeSkinRequest = JsonObjectRequest(Request.Method.POST, serverUrl, json, { response->
+        val requestURL = serverUrl + "app"
+        val changeSkinRequest = object : JsonObjectRequest(Request.Method.POST, requestURL, json, { response->
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
@@ -377,6 +388,15 @@ class RequestHandler {
             }
         }, {
         })
+        {
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                var params = HashMap(super.getHeaders())
+                params.put("Authorization", "Bearer " + accessToken)
+                return params
+            }
+        }
+
         changeSkinRequest.retryPolicy = DefaultRetryPolicy(
             4000,
             1,
@@ -425,7 +445,10 @@ class RequestHandler {
         json.put("request", "change_skin")
         json.put("params", userJSON)
 
-        val changeSkinRequest = JsonObjectRequest(Request.Method.POST, serverUrl, json, { response->
+
+        val requestURL = serverUrl + "app"
+        val changeSkinRequest = object : JsonObjectRequest(
+            Request.Method.POST, requestURL, json, { response->
             Log.d("requestHandler", response.toString())
             if(response.getString("status") == "ok")
             {
@@ -437,6 +460,14 @@ class RequestHandler {
             }
         }, {
         })
+        {
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                var params = HashMap(super.getHeaders())
+                params.put("Authorization", "Bearer " + accessToken)
+                return params
+            }
+        }
         changeSkinRequest.retryPolicy = DefaultRetryPolicy(
             4000,
             1,

@@ -88,6 +88,8 @@ class MainActivity : AppCompatActivity(), LocationListener{
 
         //Lire les infos de l'utilisateur
         val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        val accessToken = sharedPreferences.getString("ACCESS_TOKEN", "null")
+        requestHandler.accessToken = accessToken!!
         client= User(sharedPreferences.getInt("USER_ID", 0))
         client.skin = sharedPreferences.getString("USER_SKIN", "default_skin")!!
         client.pseudo = sharedPreferences.getString("USER_PSEUDO", "ERROR")!!
@@ -657,7 +659,7 @@ private fun handleLongClick( clickedPoint : LatLng)
         if(client!=null && location!=null)
         {
             client.symbol!!.latLng=LatLng(location.latitude, location.longitude)
-            userSymbolManager.update(client.symbol)
+            clientSymbolManager.update(client.symbol)
         }
         Handler(Looper.getMainLooper()).postDelayed({
             updateClientSymbolLoop()

@@ -37,6 +37,8 @@ class InfosPage : AppCompatActivity() {
 
         requestHandler.initialize(this)
         val sharedPreferences  = getSharedPreferences(PREFNAME, MODE_PRIVATE)
+        val accessToken = sharedPreferences.getString("ACCESS_TOKEN", "null")
+        requestHandler.accessToken = accessToken!!
 
         ogSkin = sharedPreferences.getString("USER_SKIN", "default_skin")!!
         newSkin = ogSkin

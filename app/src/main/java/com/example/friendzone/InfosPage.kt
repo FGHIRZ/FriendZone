@@ -38,8 +38,6 @@ class InfosPage : AppCompatActivity() {
 
         val sharedPreferences: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
         requestHandler.initialize(this, sharedPreferences)
-        val accessToken = sharedPreferences.getString("ACCESS_TOKEN", "null")
-        requestHandler.accessToken = accessToken!!
 
         ogSkin = sharedPreferences.getString("USER_SKIN", "default_skin")!!
         newSkin = ogSkin
@@ -122,7 +120,8 @@ class InfosPage : AppCompatActivity() {
                 editPen.setImageResource(R.drawable.edit_icon )
                 editing = false
 
-                requestHandler.requestPseudoChange(pseudo, userId, this)
+                val thread = Thread { requestHandler.requestPseudoChange(pseudo, userId, this) }
+                thread.start()
                 sharedPreferences.edit().putString("USER_PSEUDO", pseudo).commit()
             }
         }
@@ -146,7 +145,8 @@ class InfosPage : AppCompatActivity() {
         val userId = sharedPreferences.getInt("USER_ID", 0)
         Log.d("ProfilePage", ogSkin + " ,  " + newSkin)
         if (ogSkin != newSkin){
-            requestHandler.requestSkinChange(newSkin,userId, this)
+            val thread = Thread { requestHandler.requestSkinChange(newSkin,userId, this)}
+            thread.start()
         }
     }
 

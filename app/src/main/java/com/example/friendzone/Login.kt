@@ -1,5 +1,6 @@
 package com.example.friendzone
 
+
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
@@ -11,12 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.auth0.android.jwt.JWT
 import com.mapbox.android.core.permissions.PermissionsListener
-
-
 import com.mapbox.android.core.permissions.PermissionsManager
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import java.util.*
 
 
@@ -86,7 +82,6 @@ class Login : AppCompatActivity(), PermissionsListener{
             }
 
             loginButton.setOnClickListener {
-                Log.d("INTERNET", "clicked on button")
                 requestHandler.requestLogin(username.text.toString(), password.text.toString(), this)
             }
             createAccount.setOnClickListener {
@@ -100,8 +95,8 @@ class Login : AppCompatActivity(), PermissionsListener{
         val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
 
         val userId = sharedPref.getInt("USER_ID", 0)
-        requestHandler.requestAccessToken()
-        requestHandler.requestClientInfo(userId)
+        val thread = Thread { requestHandler.requestClientInfo(userId) }
+        thread.start()
     }
 
     fun startMapActivity(user : User)
@@ -119,16 +114,19 @@ class Login : AppCompatActivity(), PermissionsListener{
         finish()
     }
 
-    fun loginSuccess(userId : Int, accessToken : String)
+    fun loginSuccess(userId : Int, refreshToken : String)
     {
         val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
         val editor = sharedPref.edit()
 
         if(rememberme)
         {
+            editor.putString("REFRESH_TOKEN", refreshToken)
             editor.putInt("USER_ID", userId)
             editor.apply()
         }
+        val thread = Thread { requestHandler.requestClientInfo(userId) }
+        thread.start()
     }
 
     fun loginError()

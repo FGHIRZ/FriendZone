@@ -207,9 +207,11 @@ class MainActivity : AppCompatActivity(), LocationListener{
         val location = mapboxMap.locationComponent.lastKnownLocation!!
         if(viewOthers)
         {
-            requestHandler.requestUserList(location, client, userIsVisible, this)
+            val userListThread = Thread { requestHandler.requestUserList(location, client, userIsVisible, this)}
+            userListThread.start()
         }
-        requestHandler.requestEventList(location, this)
+        val eventListThread = Thread { requestHandler.requestEventList(location, this) }
+        eventListThread.start()
         Handler(Looper.getMainLooper()).postDelayed({
             updateLoop()
         }, 10000)
@@ -329,11 +331,6 @@ class MainActivity : AppCompatActivity(), LocationListener{
         }
     }
 
-    /*
-    private fun createEvent(location : LatLng)
-    {
-        requestHandler.requestEventCreation(client.user_id, "event_test_icon", location, this)
-    }*/
 //=====================================================
 
 
@@ -686,9 +683,11 @@ private fun handleLongClick( clickedPoint : LatLng)
             layout.addView(img)
 
             img.setOnClickListener {
-                requestHandler.requestEventCreation(client.user_id, eventListArray[i] as String, flag.symbol!!.latLng, this )
+                val eventCreationThread = Thread { requestHandler.requestEventCreation(client.user_id, eventListArray[i] as String, flag.symbol!!.latLng, this ) }
+                eventCreationThread.start()
                 val location = mapboxMap.locationComponent.lastKnownLocation!!
-                requestHandler.requestEventList(location,this)
+                val eventListThread = Thread { requestHandler.requestEventList(location,this) }
+                eventListThread.start()
                 cancelFlag()
             }
             val skinUrl = requestHandler.serverUrl + "events/" + eventListArray[i] + ".png"

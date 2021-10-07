@@ -33,14 +33,17 @@ class RequestHandler {
 
     var userId = 0
 
+    private lateinit var sharedpref : SharedPreferences
+
     private var activity = Activity()
 
     fun initialize(context: Context, sharedPreferences: SharedPreferences) {
         queue = Volley.newRequestQueue(context)
+        sharedpref = sharedPreferences
         accessToken = sharedPreferences.getString("ACCESS_TOKEN", "null")!!
         refreshToken = sharedPreferences.getString("REFRESH_TOKEN", "null")!!
         userId = sharedPreferences.getInt("USER_ID", 0)
-        this.activity = activity
+        activity = context as Activity
     }
 
     fun requestAccountCreation(username: String, password: String, activity: Activity)
@@ -75,7 +78,6 @@ class RequestHandler {
     fun requestLogin(username: String, password: String, activity : Activity) {
 
         Log.d("INTERNET", "doing the request")
-
         val jsonRequest = JSONObject()
         val userJson = JSONObject()
         userJson.put("username", username)
@@ -89,7 +91,6 @@ class RequestHandler {
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.POST, requestUrl, jsonRequest,
             { response ->
-                Log.d("INTERNET", response.toString())
                 if((response.get("status") as String) == "ok") {
                     userId = response.getJSONObject("params").getInt("user_id")
                     refreshToken = response.getJSONObject("params").getString("refresh_token")
@@ -146,6 +147,7 @@ class RequestHandler {
             if(response.getString("status") == "ok")
             {
                  accessToken = response.getJSONObject("params").getString("access_token")
+                 sharedpref.edit().putString("ACCESS_TOKEN", accessToken).apply()
                  Log.d("INTERNET", "message reception token")
             }
         }
@@ -162,9 +164,7 @@ class RequestHandler {
 
     fun requestClientInfo(userId : Int)
     {
-        Log.d("INTERNET", "message début de boucle")
         verify_access_token()
-        Log.d("INTERNET", "message fin de boucle")
         val jsonRequest = JSONObject()
         val userJson = JSONObject()
         userJson.put("user_id", userId)
@@ -215,7 +215,7 @@ class RequestHandler {
     fun requestUserList(location : Location, user : User, visibile : Boolean, activity: Activity){
 
         // Request a string response from the provided URL.
-
+        verify_access_token()
         val json= JSONObject()
         val locationJSON = JSONObject()
         locationJSON.put("lat", location.latitude)
@@ -256,7 +256,7 @@ class RequestHandler {
     fun requestEventList(location : Location, activity: Activity){
 
         // Request a string response from the provided URL.
-
+        verify_access_token()
         val json= JSONObject()
         val locationJSON = JSONObject()
         locationJSON.put("lat", location.latitude)
@@ -294,6 +294,7 @@ class RequestHandler {
 
     fun requestEventCreation(user_id : Int, type: String, location: LatLng, activity: Activity)
     {
+        verify_access_token()
         val json = JSONObject()
         json.put("request", "create_event")
 
@@ -343,6 +344,7 @@ class RequestHandler {
 
 
     fun requestUsernameChange(user_id: Int, new_username: String, password: String, activity: Activity) {
+
         val json = JSONObject()
         val userJSON= JSONObject()
         userJSON.put("user_id", user_id)
@@ -408,6 +410,7 @@ class RequestHandler {
     }
 
     fun requestAccountDeletion(user_id: Int,username: String, password: String, activity: Activity) {
+
         val json = JSONObject()
         val userJSON= JSONObject()
         userJSON.put("user_id", user_id)
@@ -438,6 +441,7 @@ class RequestHandler {
     }
 
     fun requestPseudoChange(pseudo: String?, user_id: Int, activity: Activity) {
+        verify_access_token()
         val json = JSONObject()
         val userJSON= JSONObject()
         userJSON.put("user_id", user_id)
@@ -529,11 +533,18 @@ class RequestHandler {
     {
         if(!check_access_token())
         {
+            Log.d("INTERNET", "Bad Token !")
             requestAccessToken()
+        }
+        else
+        {
+            Log.d("INTERNET", "Good Token !")
         }
     }
 
     fun requestSkinChange(selectedSkin: String?, user_id: Int, activity: Activity) {
+
+        verify_access_token()
         val json = JSONObject()
         val userJSON= JSONObject()
         userJSON.put("user_id", user_id)

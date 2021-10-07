@@ -59,7 +59,7 @@ class Settings : AppCompatActivity() {
         val pref = getSharedPreferences(PREFNAME, PRIVATEMODE)
         val editor = pref.edit()
 
-        editor.putString("ACCESS_TOKEN", "null")
+        editor.remove("REFRESH_TOKEN")
         editor.apply()
 
         val intent = Intent(this, Login::class.java)

@@ -47,7 +47,7 @@ class DeleteAccount : AppCompatActivity() {
 //        preferences.edit().remove("USER_PASSWORD")
         // ou
         editor.clear()
-        editor.putString("ACCESS_TOKEN", "null")
+        editor.remove("REFRESH_TOKEN")
         editor.apply()
 
         // go back to main activity

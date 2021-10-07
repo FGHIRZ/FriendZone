@@ -47,14 +47,20 @@
     </LinearLayout>
 
 
+<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/event_menu_bg_2"
+        android:id="@+id/event_menu"
+        android:visibility="gone">
+
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/event_menu_bg"
             android:gravity="center_horizontal"
             android:layout_gravity="top"
-            android:visibility="gone"
-            android:id="@+id/event_menu"
+
             android:orientation="vertical">
         <LinearLayout
                 android:id="@+id/main_menu_layout"
@@ -137,8 +143,8 @@
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true"/>
 
+        </LinearLayout>
     </LinearLayout>
-
     <Button
             android:id="@+id/cancel_button"
             android:layout_width="50dp" android:layout_height="50dp"
@@ -150,13 +156,20 @@
             android:visibility="gone"
             android:textColor="#FF006A"/>
 
-    <Button
-            android:id="@+id/custom_button"
-            android:layout_width="50dp" android:layout_height="50dp"
-            android:layout_gravity="bottom|left"
+    <LinearLayout
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:layout_gravity="bottom|center_horizontal"
             android:layout_margin="20dp"
-            android:background="@drawable/validate_button"
-            android:text="=)"
-            android:textSize="30dp"
-            android:textColor="#333333"/>
+            android:gravity="center"
+            android:background="@drawable/validate_button">
+        <Button
+                android:id="@+id/custom_button"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:background="@drawable/character_icon"
+                android:textColor="#333333"/>
+    </LinearLayout>
+
 </FrameLayout>

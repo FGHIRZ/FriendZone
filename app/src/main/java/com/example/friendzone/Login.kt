@@ -14,6 +14,9 @@ import com.mapbox.android.core.permissions.PermissionsListener
 
 
 import com.mapbox.android.core.permissions.PermissionsManager
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.util.*
 
 
@@ -98,14 +101,7 @@ class Login : AppCompatActivity(), PermissionsListener{
 
         val userId = sharedPref.getInt("USER_ID", 0)
         requestHandler.requestAccessToken()
-        requestHandler.requestClientInfo(userId, this)
-    }
-
-    fun AccessTokenReceived() {
-        val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
-
-        val userId = sharedPref.getInt("USER_ID", 0)
-        requestHandler.requestClientInfo(userId, this)
+        requestHandler.requestClientInfo(userId)
     }
 
     fun startMapActivity(user : User)
@@ -131,10 +127,8 @@ class Login : AppCompatActivity(), PermissionsListener{
         if(rememberme)
         {
             editor.putInt("USER_ID", userId)
-            editor.putString("ACCESS_TOKEN", accessToken)
             editor.apply()
         }
-        requestHandler.requestClientInfo(userId, this)
     }
 
     fun loginError()
@@ -173,6 +167,4 @@ class Login : AppCompatActivity(), PermissionsListener{
             finish()
         }
     }
-
-
 }

@@ -11,6 +11,7 @@ import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.RequestFuture
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.auth0.android.jwt.JWT
@@ -19,7 +20,8 @@ import org.json.JSONObject
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.util.*
-import kotlin.collections.HashMap
+import java.util.concurrent.ExecutionException
+
 
 class RequestHandler {
 
@@ -31,11 +33,14 @@ class RequestHandler {
 
     var userId = 0
 
+    private var activity = Activity()
+
     fun initialize(context: Context, sharedPreferences: SharedPreferences) {
         queue = Volley.newRequestQueue(context)
         accessToken = sharedPreferences.getString("ACCESS_TOKEN", "null")!!
         refreshToken = sharedPreferences.getString("REFRESH_TOKEN", "null")!!
         userId = sharedPreferences.getInt("USER_ID", 0)
+        this.activity = activity
     }
 
     fun requestAccountCreation(username: String, password: String, activity: Activity)
@@ -86,8 +91,8 @@ class RequestHandler {
             { response ->
                 Log.d("INTERNET", response.toString())
                 if((response.get("status") as String) == "ok") {
-                    val userId = response.getJSONObject("params").getInt("user_id")
-                    val refreshToken = response.getJSONObject("params").getString("refresh_token")
+                    userId = response.getJSONObject("params").getInt("user_id")
+                    refreshToken = response.getJSONObject("params").getString("refresh_token")
                     (activity as Login).loginSuccess(userId, refreshToken)
                 }
                 else
@@ -109,6 +114,8 @@ class RequestHandler {
 
     fun requestAccessToken(){
 
+        val future = RequestFuture.newFuture<JSONObject>()
+
         val json= JSONObject()
         val paramsJSON = JSONObject()
         paramsJSON.put("user_id", userId)
@@ -118,14 +125,7 @@ class RequestHandler {
         val requestURL = serverUrl + "get_access_token"
 
         val accessTokenRequest : JsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, requestURL, json,
-            { response ->
-                if(response.getString("status") == "ok")
-                {
-                    accessToken = response.getJSONObject("params").getString("access_token")
-                    Log.d("INTERNET", "message recepetion token")
-                }
-            }, { }) {
+            Method.POST, requestURL, json, future, future) {
             @Throws(AuthFailureError::class)
             override fun getHeaders(): Map<String, String> {
                 var params = HashMap(super.getHeaders())
@@ -138,14 +138,31 @@ class RequestHandler {
             4000,
             1,
             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-
-
         queue.add(accessTokenRequest)
+
+        try {
+            Log.d("INTERNET", "callback ?")
+            val response : JSONObject = future.get()
+            if(response.getString("status") == "ok")
+            {
+                 accessToken = response.getJSONObject("params").getString("access_token")
+                 Log.d("INTERNET", "message reception token")
+            }
+        }
+        catch (e : InterruptedException)
+        {
+
+        }
+        catch (e : ExecutionException)
+        {
+
+        }
     }
 
 
-    fun requestClientInfo(userId : Int, activity : Activity)
+    fun requestClientInfo(userId : Int)
     {
+        Log.d("INTERNET", "message début de boucle")
         verify_access_token()
         Log.d("INTERNET", "message fin de boucle")
         val jsonRequest = JSONObject()
@@ -513,9 +530,6 @@ class RequestHandler {
         if(!check_access_token())
         {
             requestAccessToken()
-        }
-        while(!check_access_token())
-        {
         }
     }
 

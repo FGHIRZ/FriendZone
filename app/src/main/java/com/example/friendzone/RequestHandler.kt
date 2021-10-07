@@ -24,7 +24,7 @@ import kotlin.collections.HashMap
 class RequestHandler {
 
     private lateinit var queue: RequestQueue
-    val serverUrl = "https://82.165.223.209:8080/"
+    val serverUrl = "https://www.meetgames.fr:8080/"
 
     var accessToken = ""
     var refreshToken = ""
@@ -123,6 +123,7 @@ class RequestHandler {
                 if(response.getString("status") == "ok")
                 {
                     accessToken = response.getJSONObject("params").getString("access_token")
+                    Log.d("INTERNET", "message recepetion token")
                 }
             }, { }) {
             @Throws(AuthFailureError::class)
@@ -146,6 +147,7 @@ class RequestHandler {
     fun requestClientInfo(userId : Int, activity : Activity)
     {
         verify_access_token()
+        Log.d("INTERNET", "message fin de boucle")
         val jsonRequest = JSONObject()
         val userJson = JSONObject()
         userJson.put("user_id", userId)

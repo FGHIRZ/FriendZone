@@ -134,8 +134,6 @@ class Login : AppCompatActivity(), PermissionsListener{
             editor.putString("ACCESS_TOKEN", accessToken)
             editor.apply()
         }
-
-        requestHandler.accessToken = accessToken
         requestHandler.requestClientInfo(userId, this)
     }
 

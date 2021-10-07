@@ -9,10 +9,12 @@ import android.widget.*
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.auth0.android.jwt.JWT
 import com.mapbox.android.core.permissions.PermissionsListener
 
 
 import com.mapbox.android.core.permissions.PermissionsManager
+import java.util.*
 
 
 class Login : AppCompatActivity(), PermissionsListener{
@@ -39,7 +41,8 @@ class Login : AppCompatActivity(), PermissionsListener{
 
         setContentView(R.layout.loading_screen)
 
-        requestHandler.initialize(this)
+        val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        requestHandler.initialize(this, sharedPreferences)
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
             showLoginPage()
         }
@@ -53,11 +56,15 @@ class Login : AppCompatActivity(), PermissionsListener{
     private fun showLoginPage()
     {
         val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
-        val accessToken = sharedPref.getString("ACCESS_TOKEN", "null")
-        if(accessToken != "null")
+        val refreshToken = sharedPref.getString("REFRESH_TOKEN", "null")
+        val now = Date()
+        if(refreshToken != "null")
         {
-            requestHandler.accessToken = accessToken!!
-            autoLogin()
+            val refreshJWT = JWT(refreshToken!!)
+            if(now < refreshJWT.expiresAt)
+            {
+                autoLogin()
+            }
         }
         else
         {
@@ -68,7 +75,6 @@ class Login : AppCompatActivity(), PermissionsListener{
             val rememberMe : CheckBox = findViewById(R.id.remember_me_checkbox)
 
             val createAccount : TextView = findViewById(R.id.create_account)
-            val editor = sharedPref.edit()
 
             rememberMe.isChecked= true
 
@@ -89,7 +95,14 @@ class Login : AppCompatActivity(), PermissionsListener{
     {
         val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
 
-        val accessToken = sharedPref.getString("ACCESS_TOKEN", "none")
+        val userId = sharedPref.getInt("USER_ID", 0)
+        requestHandler.requestAccessToken()
+        requestHandler.requestClientInfo(userId, this)
+    }
+
+    fun AccessTokenReceived() {
+        val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+
         val userId = sharedPref.getInt("USER_ID", 0)
         requestHandler.requestClientInfo(userId, this)
     }

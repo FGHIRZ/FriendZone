@@ -59,7 +59,7 @@ class Settings : AppCompatActivity() {
         val pref = getSharedPreferences(PREFNAME, PRIVATEMODE)
         val editor = pref.edit()
 
-        editor.putBoolean("AUTO_LOGIN", false)
+        editor.putString("ACCESS_TOKEN", "null")
         editor.apply()
 
         val intent = Intent(this, Login::class.java)

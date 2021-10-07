@@ -47,7 +47,7 @@ class DeleteAccount : AppCompatActivity() {
 //        preferences.edit().remove("USER_PASSWORD")
         // ou
         editor.clear()
-        editor.putBoolean("AUTO_LOGIN", false)
+        editor.putString("ACCESS_TOKEN", "null")
         editor.apply()
 
         // go back to main activity

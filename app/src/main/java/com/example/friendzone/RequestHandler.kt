@@ -2,6 +2,7 @@ package com.example.friendzone
 
 import android.app.Activity
 import android.content.Context
+import android.content.SharedPreferences
 import android.location.Location
 import android.util.Log
 import android.widget.Toast
@@ -12,20 +13,29 @@ import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.auth0.android.jwt.JWT
 import com.mapbox.mapboxsdk.geometry.LatLng
 import org.json.JSONObject
 import java.math.BigInteger
 import java.security.MessageDigest
+import java.util.*
+import kotlin.collections.HashMap
 
 class RequestHandler {
 
     private lateinit var queue: RequestQueue
-    val serverUrl = "http://82.165.223.209:8080/"
+    val serverUrl = "https://meetgames.fr/"
 
     var accessToken = ""
+    var refreshToken = ""
 
-    fun initialize(context: Context) {
+    var userId = 0
+
+    fun initialize(context: Context, sharedPreferences: SharedPreferences) {
         queue = Volley.newRequestQueue(context)
+        accessToken = sharedPreferences.getString("ACCESS_TOKEN", "null")!!
+        refreshToken = sharedPreferences.getString("REFRESH_TOKEN", "null")!!
+        userId = sharedPreferences.getInt("USER_ID", 0)
     }
 
     fun requestAccountCreation(username: String, password: String, activity: Activity)
@@ -74,8 +84,8 @@ class RequestHandler {
                 Log.d("requestHandler", response.toString())
                 if((response.get("status") as String) == "ok") {
                     val userId = response.getJSONObject("params").getInt("user_id")
-                    val access_token = response.getJSONObject("params").getString("access_token")
-                    (activity as Login).loginSuccess(userId, access_token)
+                    val refreshToken = response.getJSONObject("params").getString("refresh_token")
+                    (activity as Login).loginSuccess(userId, refreshToken)
                 }
                 else
                 {
@@ -91,6 +101,42 @@ class RequestHandler {
         )
         queue.add(jsonObjectRequest)
     }
+
+    fun requestAccessToken(){
+
+        val json= JSONObject()
+        val paramsJSON = JSONObject()
+        paramsJSON.put("user_id", userId)
+        json.put("request", "get_access_token")
+        json.put("params",paramsJSON)
+
+        val requestURL = serverUrl + "get_access_token"
+
+        val accessTokenRequest : JsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, requestURL, json,
+            { response ->
+                if(response.getString("status") == "ok")
+                {
+                    accessToken = response.getJSONObject("params").getString("access_token")
+                }
+            }, { }) {
+            @Throws(AuthFailureError::class)
+            override fun getHeaders(): Map<String, String> {
+                var params = HashMap(super.getHeaders())
+                params.put("Authorization", "Bearer " + refreshToken)
+                return params
+            }
+        }
+
+        accessTokenRequest.retryPolicy = DefaultRetryPolicy(
+            4000,
+            1,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+
+
+        queue.add(accessTokenRequest)
+    }
+
 
     fun requestClientInfo(userId : Int, activity : Activity)
     {
@@ -434,6 +480,26 @@ class RequestHandler {
     fun md5(input:String): String {
         val md = MessageDigest.getInstance("MD5")
         return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
+    }
+
+    fun check_access_token() : Boolean
+    {
+        val now = Date()
+        if(accessToken == "null")
+        {
+            requestAccessToken()
+            return false
+        }
+        else
+        {
+            val jwt = JWT(accessToken)
+            if(jwt.expiresAt!! < now)
+            {
+                requestAccessToken()
+                return false
+            }
+            return true
+        }
     }
 
     fun requestSkinChange(selectedSkin: String?, user_id: Int, activity: Activity) {

@@ -19,8 +19,8 @@ class ChangeUsername : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_change_username)
 
-        requestHandler.initialize(this)
         val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        requestHandler.initialize(this, sharedPref)
         val userId = sharedPref.getInt("USER_ID", 0)
 
         val username : EditText = findViewById(R.id.new_username_edittext)

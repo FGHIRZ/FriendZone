@@ -21,7 +21,8 @@ class CacheActivity : AppCompatActivity() {
 
         var requestHandler = RequestHandler()
 
-        requestHandler.initialize(this)
+        val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        requestHandler.initialize(this, sharedPreferences)
         requestHandler.requestSkinList(this)
 
     }

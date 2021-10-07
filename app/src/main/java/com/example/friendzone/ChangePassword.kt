@@ -19,8 +19,8 @@ class ChangePassword : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_change_password)
 
-        requestHandler.initialize(this)
         val sharedPref: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        requestHandler.initialize(this, sharedPref)
         val userId = sharedPref.getInt("USER_ID", 0)
         val username = sharedPref.getString("USER_USERNAME", "bug")
 

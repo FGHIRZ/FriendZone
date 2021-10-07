@@ -1,6 +1,7 @@
 package com.example.friendzone
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.text.Editable
@@ -35,8 +36,8 @@ class InfosPage : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_infos_page)
 
-        requestHandler.initialize(this)
-        val sharedPreferences  = getSharedPreferences(PREFNAME, MODE_PRIVATE)
+        val sharedPreferences: SharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        requestHandler.initialize(this, sharedPreferences)
         val accessToken = sharedPreferences.getString("ACCESS_TOKEN", "null")
         requestHandler.accessToken = accessToken!!
 

@@ -83,13 +83,9 @@ class MainActivity : AppCompatActivity(), LocationListener{
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //Initialisation handler
-        requestHandler.initialize(this)
-
-        //Lire les infos de l'utilisateur
         val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
-        val accessToken = sharedPreferences.getString("ACCESS_TOKEN", "null")
-        requestHandler.accessToken = accessToken!!
+        requestHandler.initialize(this, sharedPreferences)
+
         client= User(sharedPreferences.getInt("USER_ID", 0))
         client.skin = sharedPreferences.getString("USER_SKIN", "default_skin")!!
         client.pseudo = sharedPreferences.getString("USER_PSEUDO", "ERROR")!!

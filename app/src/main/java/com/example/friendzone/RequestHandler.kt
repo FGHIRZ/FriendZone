@@ -24,7 +24,7 @@ import kotlin.collections.HashMap
 class RequestHandler {
 
     private lateinit var queue: RequestQueue
-    val serverUrl = "https://meetgames.fr/"
+    val serverUrl = "https://82.165.223.209:8080/"
 
     var accessToken = ""
     var refreshToken = ""
@@ -69,6 +69,8 @@ class RequestHandler {
 
     fun requestLogin(username: String, password: String, activity : Activity) {
 
+        Log.d("INTERNET", "doing the request")
+
         val jsonRequest = JSONObject()
         val userJson = JSONObject()
         userJson.put("username", username)
@@ -78,10 +80,11 @@ class RequestHandler {
 
         val requestUrl = serverUrl + "login"
 
+
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.POST, requestUrl, jsonRequest,
             { response ->
-                Log.d("requestHandler", response.toString())
+                Log.d("INTERNET", response.toString())
                 if((response.get("status") as String) == "ok") {
                     val userId = response.getJSONObject("params").getInt("user_id")
                     val refreshToken = response.getJSONObject("params").getString("refresh_token")
@@ -93,7 +96,9 @@ class RequestHandler {
                     Toast.makeText(activity, ((response.get("params") as JSONObject).get("description") as String), Toast.LENGTH_SHORT).show()
                 }
             },
-            { })
+            {
+                Log.d("INTERNET", it.message.toString())
+            })
         jsonObjectRequest.retryPolicy = DefaultRetryPolicy(
             4000,
             1,
@@ -140,6 +145,7 @@ class RequestHandler {
 
     fun requestClientInfo(userId : Int, activity : Activity)
     {
+        verify_access_token()
         val jsonRequest = JSONObject()
         val userJson = JSONObject()
         userJson.put("user_id", userId)
@@ -487,7 +493,6 @@ class RequestHandler {
         val now = Date()
         if(accessToken == "null")
         {
-            requestAccessToken()
             return false
         }
         else
@@ -495,10 +500,20 @@ class RequestHandler {
             val jwt = JWT(accessToken)
             if(jwt.expiresAt!! < now)
             {
-                requestAccessToken()
                 return false
             }
             return true
+        }
+    }
+
+    fun verify_access_token()
+    {
+        if(!check_access_token())
+        {
+            requestAccessToken()
+        }
+        while(!check_access_token())
+        {
         }
     }
 

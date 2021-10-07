@@ -18,7 +18,8 @@ class AccountCreation : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_account_creation)
 
-        requestHandler.initialize(this)
+        val sharedPreferences = getSharedPreferences(PREFNAME, PRIVATEMODE)
+        requestHandler.initialize(this, sharedPreferences)
         val createButton : Button = findViewById(R.id.create_button)
         val usernameBox : EditText = findViewById(R.id.usernameSetting)
         val passwordBox : EditText = findViewById(R.id.passwordSetting)

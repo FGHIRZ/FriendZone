@@ -83,6 +83,7 @@ class Login : AppCompatActivity(), PermissionsListener{
             }
 
             loginButton.setOnClickListener {
+                Log.d("INTERNET", "clicked on button")
                 requestHandler.requestLogin(username.text.toString(), password.text.toString(), this)
             }
             createAccount.setOnClickListener {

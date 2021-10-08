@@ -26,7 +26,8 @@
             android:paddingBottom="10dp"
             android:layout_marginTop="100dp"
             android:background="@drawable/settings_layout_bg"
-    android:orientation="vertical">
+            android:orientation="vertical" android:paddingRight="8dp"
+            android:paddingLeft="5dp">
         <Button
                 android:layout_width="32dp"
                 android:layout_height="32dp"

@@ -3,6 +3,7 @@ package com.example.friendzone
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.GradientDrawable
 import android.location.Location
 import android.location.LocationListener
 import android.os.Bundle
@@ -111,6 +112,16 @@ class MainActivity : AppCompatActivity(), LocationListener{
         }
 
         val profileButton : Button = findViewById(R.id.custom_button)
+
+//        val gradientDrawable = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+//            intArrayOf(
+//                0XFFFFFFFF.toInt(),
+//                0XFFFFFFFF.toInt(),
+//                0XFF97E1EB.toInt(),
+//                0XFF36FFB6.toInt()
+//            ))
+//        profileButton.background = gradientDrawable
+
         profileButton.setOnClickListener {
             openProfilePage()
         }
